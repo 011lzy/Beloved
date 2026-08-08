@@ -1,0 +1,362 @@
+/* album.css - 从 style.css 拆分 */
+
+/* ===== 相册寄语 样式 ===== */
+#albumPage {
+  display: none;                 /* 默认隐藏，openAlbumApp 时改为 flex */
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+  background: #F4F4F5;
+  color: #3F3F46;
+  overflow: hidden;
+}
+#albumPage * { box-sizing: border-box; }
+#albumPage .xcyj-dim { color: #A1A1AA; }
+
+/* ---------- 顶部 Header ---------- */
+#albumPage .xcyj-header {
+  display: flex;
+  align-items: center;
+  height: calc(52px + env(safe-area-inset-top, 0px));
+  min-height: calc(52px + env(safe-area-inset-top, 0px));
+  padding: 0 8px;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: #FAFAFA;
+  border-bottom: 1px solid #E4E4E7;
+  flex-shrink: 0;
+}
+#albumPage .xcyj-back {
+  width: 40px; height: 40px;
+  border: none; background: transparent;
+  font-size: 30px; line-height: 1;
+  color: #3F3F46; cursor: pointer;
+  border-radius: 10px;
+}
+#albumPage .xcyj-back:active { background: #E4E4E7; }
+#albumPage .xcyj-title {
+  flex: 1; text-align: center;
+  font-size: 17px; font-weight: 600;
+  color: #3F3F46; margin-right: 40px;
+}
+
+/* ---------- 分类标签栏 ---------- */
+#albumPage .xcyj-cats {
+  display: flex; gap: 8px;
+  padding: 12px;
+  overflow-x: auto; overflow-y: hidden;
+  background: #FAFAFA;
+  border-bottom: 1px solid #E4E4E7;
+  flex-shrink: 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+#albumPage .xcyj-cats::-webkit-scrollbar { display: none; }
+#albumPage .xcyj-cat {
+  flex-shrink: 0;
+  padding: 7px 16px;
+  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid #E4E4E7;
+  font-size: 13px; color: #71717A;
+  cursor: pointer;
+  transition: all .2s ease;
+  white-space: nowrap;
+}
+#albumPage .xcyj-cat-active {
+  background: #3F3F46; color: #FFFFFF; border-color: #3F3F46;
+}
+#albumPage .xcyj-cat-add {
+  flex-shrink: 0;
+  min-width: 36px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px dashed #D4D4D8;
+  color: #A1A1AA; font-size: 18px; cursor: pointer;
+  padding: 0 10px;
+}
+#albumPage .xcyj-cat-input-wrap { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+#albumPage .xcyj-cat-input {
+  padding: 7px 12px; border-radius: 20px;
+  border: 1px solid #D4D4D8; font-size: 13px; width: 96px;
+  outline: none; font-family: inherit; color: #3F3F46;
+}
+#albumPage .xcyj-cat-ok {
+  padding: 7px 14px; border-radius: 20px; border: none;
+  background: #3F3F46; color: #fff; font-size: 12px; cursor: pointer;
+}
+
+/* ---------- 内容区 ---------- */
+#albumPage .xcyj-content {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden; background: #F4F4F5;
+}
+#albumPage .xcyj-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 6px; flex-shrink: 0;
+}
+#albumPage .xcyj-cur-cat { font-size: 15px; font-weight: 600; color: #3F3F46; }
+#albumPage .xcyj-upload-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 20px;
+  border: 1px solid #E4E4E7; background: #FFFFFF;
+  color: #3F3F46; font-size: 13px; cursor: pointer;
+  box-shadow: 0 2px 6px rgba(63,63,70,0.05);
+}
+#albumPage .xcyj-upload-btn:active { transform: scale(0.97); }
+#albumPage .xcyj-upload-btn svg { width: 15px; height: 15px; }
+
+/* ---------- 照片墙（悬挂拍立得） ---------- */
+#albumPage .xcyj-wall {
+  position: relative; flex: 1;
+  overflow-x: auto; overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  padding: 14px 0 calc(40px + env(safe-area-inset-bottom));
+}
+#albumPage .xcyj-wall::-webkit-scrollbar { height: 4px; }
+#albumPage .xcyj-wall::-webkit-scrollbar-thumb { background: #D4D4D8; border-radius: 2px; }
+#albumPage .xcyj-rope {
+  position: absolute; top: 14px; left: 0; right: 0;
+  height: 1px; background: #D4D4D8; z-index: 0;
+}
+#albumPage .xcyj-row {
+  display: flex; gap: 26px; padding: 0 26px;
+  align-items: flex-start; min-height: 100%;
+  width: max-content; min-width: 100%;
+}
+#albumPage .xcyj-photo {
+  flex-shrink: 0; width: 150px;
+  display: flex; flex-direction: column; align-items: center;
+  position: relative;
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+}
+#albumPage .xcyj-string { width: 1px; background: #D4D4D8; }
+#albumPage .xcyj-clip {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #FFFFFF; border: 1px solid #D4D4D8;
+  margin-top: -1px; z-index: 1;
+  box-shadow: 0 1px 2px rgba(63,63,70,0.08);
+}
+#albumPage .xcyj-polaroid {
+  background: #FFFFFF; border-radius: 12px;
+  padding: 10px 10px 12px;
+  box-shadow: 0 8px 20px rgba(63,63,70,0.10), 0 2px 6px rgba(63,63,70,0.05);
+  width: 150px; cursor: pointer;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+#albumPage .xcyj-polaroid:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 26px rgba(63,63,70,0.14), 0 3px 8px rgba(63,63,70,0.06);
+}
+#albumPage .xcyj-polaroid-img {
+  width: 130px; height: 130px; object-fit: cover;
+  border-radius: 6px; background: #F4F4F5; display: block;
+  pointer-events: none;
+}
+#albumPage .xcyj-polaroid-msg {
+  font-size: 12px; color: #71717A; line-height: 1.5;
+  min-height: 34px; margin-top: 10px; word-break: break-word;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+#albumPage .xcyj-polaroid-date {
+  font-size: 10px; color: #A1A1AA; text-align: right;
+  margin-top: 6px; letter-spacing: .3px;
+}
+#albumPage .xcyj-empty {
+  width: 80vw; max-width: 360px; margin: 60px auto 0;
+  text-align: center; color: #A1A1AA; font-size: 13px; line-height: 1.8;
+}
+
+/* ---------- 弹层通用（放大视图 / 重新分类） ---------- */
+#albumPage .xcyj-overlay {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 360; padding: 20px;
+  padding-top: calc(20px + env(safe-area-inset-top));
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+#albumPage .xcyj-detail-mask {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.45);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+}
+
+/* ---------- 放大详情卡 ---------- */
+#albumPage .xcyj-detail-card {
+  position: relative; width: 100%; max-width: 380px; max-height: 100%;
+  background: #FFFFFF; border-radius: 16px;
+  display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+}
+#albumPage .xcyj-detail-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 32px; height: 32px; border-radius: 50%;
+  border: none; background: rgba(0,0,0,0.35); color: #fff;
+  font-size: 20px; line-height: 1; cursor: pointer; z-index: 2;
+}
+#albumPage .xcyj-detail-scroll {
+  overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 16px;
+}
+#albumPage .xcyj-detail-img {
+  width: 100%; max-height: 50vh; object-fit: contain;
+  background: #F4F4F5; display: block;
+}
+#albumPage .xcyj-detail-date {
+  font-size: 12px; color: #A1A1AA; text-align: right; padding: 10px 16px 0;
+}
+#albumPage .xcyj-detail-section { padding: 12px 16px; border-top: 1px solid #F4F4F5; }
+#albumPage .xcyj-detail-label { font-size: 12px; color: #A1A1AA; margin-bottom: 6px; }
+#albumPage .xcyj-detail-text {
+  font-size: 14px; color: #3F3F46; line-height: 1.6;
+  word-break: break-word; min-height: 22px;
+}
+#albumPage .xcyj-detail-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+#albumPage .xcyj-mini-btn {
+  padding: 6px 14px; border-radius: 20px;
+  border: 1px solid #E4E4E7; background: #FAFAFA;
+  color: #3F3F46; font-size: 12px; cursor: pointer;
+}
+#albumPage .xcyj-mini-btn:active { background: #E4E4E7; }
+#albumPage .xcyj-mini-btn:disabled { opacity: .5; cursor: default; }
+#albumPage .xcyj-detail-status { font-size: 11px; color: #A1A1AA; margin-top: 8px; min-height: 14px; }
+#albumPage .xcyj-edit-area {
+  width: 100%; min-height: 70px; border-radius: 10px;
+  border: 1px solid #D4D4D8; padding: 10px; font-size: 14px;
+  font-family: inherit; color: #3F3F46; resize: vertical; outline: none;
+}
+#albumPage .xcyj-edit-actions { display: flex; gap: 8px; margin-top: 8px; }
+#albumPage .xcyj-danger-btn {
+  width: 100%; padding: 10px; border-radius: 20px;
+  border: 1px solid #E4E4E7; background: #FFFFFF;
+  color: #B91C1C; font-size: 13px; cursor: pointer;
+}
+
+/* ---------- 重新分类卡 ---------- */
+#albumPage .xcyj-recat-card {
+  position: relative; width: 100%; max-width: 320px;
+  background: #FFFFFF; border-radius: 16px; padding: 18px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+}
+#albumPage .xcyj-recat-title {
+  font-size: 15px; font-weight: 600; color: #3F3F46;
+  margin-bottom: 14px; text-align: center;
+}
+#albumPage .xcyj-recat-list {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+}
+#albumPage .xcyj-recat-item {
+  padding: 8px 16px; border-radius: 20px;
+  background: #FAFAFA; border: 1px solid #E4E4E7;
+  font-size: 13px; color: #3F3F46; cursor: pointer;
+}
+#albumPage .xcyj-recat-cur { background: #3F3F46; color: #fff; border-color: #3F3F46; }
+#albumPage .xcyj-recat-close {
+  display: block; margin: 16px auto 0; padding: 8px 24px;
+  border-radius: 20px; border: 1px solid #E4E4E7;
+  background: #fff; color: #71717A; font-size: 13px; cursor: pointer;
+}
+
+/* ---------- Toast ---------- */
+#albumPage .xcyj-toast {
+  position: fixed; left: 50%;
+  bottom: calc(40px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  background: rgba(63,63,70,0.92); color: #fff;
+  font-size: 13px; padding: 10px 18px; border-radius: 20px;
+  z-index: 400; opacity: 0; transition: opacity .25s ease;
+  pointer-events: none; max-width: 80vw; text-align: center;
+}
+
+/* ---------- 菜单按钮 ---------- */
+#albumPage .xcyj-menu-btn {
+  width: 40px; height: 40px;
+  border: none; background: transparent;
+  cursor: pointer; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+#albumPage .xcyj-menu-btn svg { width: 22px; height: 22px; color: #3F3F46; }
+#albumPage .xcyj-menu-btn:active { background: #E4E4E7; }
+#albumPage .xcyj-menu-btn img { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; }
+#albumPage .xcyj-title { margin-right: 0 !important; }
+
+/* ---------- 相册设置模态框 ---------- */
+#albumPage .xcyj-settings-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 370;
+  display: flex; align-items: center; justify-content: center;
+}
+#albumPage .xcyj-settings-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 90%; max-width: 360px;
+  max-height: 80vh; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+#albumPage .xcyj-settings-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #E4E4E7;
+  flex-shrink: 0;
+}
+#albumPage .xcyj-settings-title { font-size: 17px; font-weight: 600; color: #3F3F46; }
+#albumPage .xcyj-settings-close {
+  width: 32px; height: 32px; border: none; background: transparent;
+  font-size: 24px; color: #A1A1AA; cursor: pointer; border-radius: 8px;
+}
+#albumPage .xcyj-settings-close:active { background: #F4F4F5; }
+#albumPage .xcyj-settings-body { padding: 12px 20px 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+#albumPage .xcyj-setting-row {
+  padding: 14px 0;
+  border-bottom: 1px solid #F4F4F5;
+}
+#albumPage .xcyj-setting-row:last-child { border-bottom: none; }
+#albumPage .xcyj-setting-label { font-size: 15px; color: #3F3F46; font-weight: 500; margin-bottom: 8px; }
+#albumPage .xcyj-setting-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+#albumPage .xcyj-setting-controls input[type="color"] {
+  width: 44px; height: 36px; border: 1px solid #E4E4E7; border-radius: 8px; cursor: pointer; padding: 2px;
+}
+#albumPage .xcyj-setting-btn {
+  padding: 8px 14px; background: #F4F4F5; border: 1px solid #E4E4E7;
+  border-radius: 8px; font-size: 13px; color: #3F3F46; cursor: pointer;
+  transition: all 0.2s ease;
+}
+#albumPage .xcyj-setting-btn:active { transform: scale(0.96); background: #E4E4E7; }
+#albumPage .xcyj-setting-reset {
+  padding: 8px 14px; background: transparent; border: 1px solid #D4D4D8;
+  border-radius: 8px; font-size: 13px; color: #71717A; cursor: pointer;
+  transition: all 0.2s ease;
+}
+#albumPage .xcyj-setting-reset:active { transform: scale(0.96); background: #F4F4F5; }
+
+    
+        .wordcard-back { display: none !important; }
+        .wordcard-header { background: transparent !important; border-bottom: none !important; }
+        .wordcard-page { background: #ffffff !important; }
+        .wordcard-list { background: transparent; }
+        .special-section { background: #ffffff; border: none; }
+        .special-item { border: none; }
+        .special-header button { border: none; }
+
+        .special-section { border: none !important; }
+        .special-item { border: none !important; background: transparent !important; }
+        .special-header { border: none !important; }
+        .special-header button { border: none !important; background: #f5f5f5 !important; border-radius: 4px !important; }
+        .special-header span { color: #333 !important; }
+        .image-card-grid { border: none !important; }
+
+        .wordcard-back, .wordlib-back { display: none !important; }
+        .wordlib-header { background: transparent !important; border-bottom: none !important; }
+        .wordlib-title { font-size: 34px !important; font-weight: 700 !important; color: #1a1a1a !important; }
+        .settings-header { background: transparent !important; border-bottom: none !important; }
+        .settings-back { display: none !important; }
+        #storagePage .settings-title, #balanceAppPage .settings-title { font-size: 34px; font-weight: 700; color: #1a1a1a; }
+
+        #balanceContactSelector {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+

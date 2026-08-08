@@ -1,0 +1,236 @@
+/* letter.css - 从 style.css 拆分 */
+
+        /* ========== 信封样式 ========== */
+        /* ========== 信封页面 - 蓝白手帐风格（主色#85DBF9） ========== */
+        .letter-page {
+            background: linear-gradient(180deg, #85DBF9 0%, #e8f7fe 50%, #85DBF9 100%) !important;
+        }
+        .letter-page-header {
+            height: calc(50px + env(safe-area-inset-top));
+            padding-top: env(safe-area-inset-top);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-left: 16px;
+            padding-right: 16px;
+            position: relative;
+            flex-shrink: 0;
+            background: transparent;
+        }
+        .letter-page-back, .letter-page-menu {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            z-index: 1001;
+            pointer-events: auto;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .letter-page-back svg, .letter-page-menu svg {
+            pointer-events: none;
+        }
+        .letter-tabs {
+            display: flex;
+            border-bottom: 2px dashed #85DBF9;
+            background: rgba(255,255,255,0.7);
+            flex-shrink: 0;
+            overflow-x: auto;
+            backdrop-filter: blur(8px);
+        }
+        .letter-tab {
+            flex: 1;
+            min-width: 60px;
+            text-align: center;
+            padding: 14px 0;
+            font-size: 14px;
+            color: #5a9ec4;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .letter-tab.active {
+            color: #2a7ab5;
+            border-bottom-color: #2a7ab5;
+            font-weight: 600;
+        }
+        .letter-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .letter-item {
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            padding: 16px 18px;
+            box-shadow: 0 3px 12px rgba(133,219,249,0.25);
+            cursor: pointer;
+            border: 2px solid #85DBF9;
+            border-left: 4px solid #2a7ab5;
+            position: relative;
+            overflow: visible;
+            transition: all 0.3s;
+        }
+        .letter-item:hover {
+            box-shadow: 0 4px 16px rgba(133,219,249,0.35);
+        }
+        .letter-item.favorite { border-left-color: #f0a040; }
+        .letter-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2a7ab5;
+            margin-bottom: 4px;
+        }
+        .letter-preview {
+            font-size: 13px;
+            color: #5a9ec4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: 6px;
+        }
+        .letter-date {
+            font-size: 11px;
+            color: #7ab5d8;
+            text-align: right;
+        }
+        /* 信封详情 - 手账风（9:16比例，宽1080×高1920） */
+        /* 悬浮框采用9:16竖屏比例，以视口高度为基准自适应缩放。 */
+        .letter-detail-modal .modal-content {
+            height: 92vh;
+            max-height: 92vh;
+            min-height: 92vh;
+            aspect-ratio: 9 / 16;
+            width: auto;
+            min-width: calc(92vh * 9 / 16);
+            max-width: calc(92vh * 9 / 16);
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border-radius: 20px;
+            border: 2px solid #85DBF9;
+            padding: 20px 16px;
+        }
+        .letter-detail-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+        .letter-detail-text {
+            font-size: 14px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .letter-detail-footer {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding-top: 12px;
+            border-top: 1px dashed #85DBF9;
+        }
+        .letter-detail-footer span {
+            font-size: 13px;
+            color: #5a9ec4;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+        .letter-detail-footer span:hover { color: #2a7ab5; }
+
+        /* 写信弹窗（9:16比例，宽1080×高1920） */
+        .send-letter-modal .modal-content {
+            height: 92vh;
+            max-height: 92vh;
+            min-height: 92vh;
+            aspect-ratio: 9 / 16;
+            width: auto;
+            min-width: calc(92vh * 9 / 16);
+            max-width: calc(92vh * 9 / 16);
+            display: flex;
+            flex-direction: column;
+            background: #f7fbff;
+            border-radius: 20px;
+            border: 2px solid #c8ddf0;
+        }
+        .send-letter-modal .modal-textarea {
+            flex: 1;
+            height: auto;
+            line-height: 1.6;
+        }
+    
+        /* 关闭毛玻璃效果：使用纯色背景并移除边框模糊 */
+        html.no-glass .app-icon { background: var(--icon-bg, #f9f9f9) !important; }
+        html.no-glass .anniversary-widget { background: var(--anniversary-bg, #f9f9f9) !important; }
+        html.no-glass .period-calendar { background: var(--period-bg, #f9f9f9) !important; }
+        html.no-glass .time-widget { background: var(--time-bg, #f9f9f9) !important; }
+        html.no-glass .dock-bar { background: var(--dock-bg, #f9f9f9) !important; }
+        html.no-glass .word-card { background: var(--word-card-bg, #ffffff) !important; }
+        html.no-glass .p3-music-widget { background-color: var(--p3-mw-bg, #f9f9f9) !important; }
+        html.no-glass .p3-glass-input { background: var(--p3-input-bg-solid, #f0f0f0) !important; border-radius: 16px !important; }
+        html.no-glass .p3-center-avatar { background: var(--p3-input-bg-solid, #f0f0f0) !important; }
+        .p3-music-widget.has-bg-image { background-color: rgba(255,255,255,0.45) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+        html.no-glass .app-icon,
+        html.no-glass .anniversary-widget,
+        html.no-glass .period-calendar,
+        html.no-glass .time-widget,
+        html.no-glass .dock-bar,
+        html.no-glass .word-card,
+        html.no-glass .p3-music-widget,
+        html.no-glass .p3-glass-input,
+        html.no-glass .p3-center-avatar {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border: none !important;
+        }
+        html.dark-mode,html.dark-mode body{background:#1a1a1a!important;color:#e0e0e0!important;}
+        html.dark-mode .settings-page,html.dark-mode .wordcard-page,html.dark-mode .moments-page,html.dark-mode .diary-page,html.dark-mode .letter-page,html.dark-mode #globalSettingsPage,html.dark-mode #beautifyPage,html.dark-mode #storagePage,html.dark-mode #lifeDeathPageNotApplied,html.dark-mode #albumPageNotApplied{background:#1a1a1a!important;color:#e0e0e0!important;}
+        html.dark-mode .settings-content,html.dark-mode .settings-section{background:#2d2d2d!important;}
+        html.dark-mode .settings-header,html.dark-mode .page-header{background:transparent!important;/*override*/background:#1a1a1a!important;color:#e0e0e0!important;}
+        html.dark-mode .settings-title,html.dark-mode .page-title,html.dark-mode .section-title,html.dark-mode .section-subtitle,html.dark-mode .settings-row label,html.dark-mode .settings-back,html.dark-mode .page-back,html.dark-mode .settings-label,html.dark-mode .settings-value{color:#e0e0e0!important;}
+        html.dark-mode .settings-row,html.dark-mode .settings-item{color:#e0e0e0!important;border-color:#444!important;}
+        html.dark-mode input,html.dark-mode textarea,html.dark-mode select{background:#333!important;color:#e0e0e0!important;border-color:#555!important;}
+        html.dark-mode .modal,html.dark-mode .modal-content{background:#2d2d2d!important;color:#e0e0e0!important;}
+        html.dark-mode .chat-header{color:#e0e0e0!important;border-color:transparent!important;}
+        html.dark-mode .chat-footer{background-color:#2d2d2d!important;}
+        html.dark-mode .chat-input{background:#333!important;color:#e0e0e0!important;}
+        html.dark-mode .emoji-panel,html.dark-mode .plus-panel{background-color:#2d2d2d!important;}
+        html.dark-mode .emoji-tab,html.dark-mode .plus-item span,html.dark-mode .icon-item span{color:#e0e0e0!important;}
+        html.dark-mode .diary-item,html.dark-mode .letter-item,html.dark-mode .moment-item,html.dark-mode .wordcard-item,html.dark-mode .special-item{background:#2d2d2d!important;color:#e0e0e0!important;}
+        html.dark-mode .moment-text{color:#e0e0e0!important;}
+        html.dark-mode button{color:#e0e0e0!important;}
+        html.dark-mode .frame-item{border-color:#555!important;}
+        html.dark-mode .beautify-main-tab{color:#aaa!important;background:#2d2d2d!important;}
+        html.dark-mode .beautify-main-tab.active{color:#fff!important;border-bottom-color:#fff!important;}
+        html.dark-mode .msg-quote{background:rgba(255,255,255,0.1)!important;color:#ccc!important;}
+        html.dark-mode .msg-row.other .msg-bubble{background:#fff!important;border-color:#fff!important;color:#000!important;}
+        html.dark-mode .msg-row.mine .msg-bubble{background:#333!important;border-color:#333!important;color:#fff!important;}
+        /* 深色模式下小尾巴跟随气泡强制颜色，避免尾巴仍显示自定义色导致不融合 */
+        html.dark-mode .msg-bubble.tail-left::before,
+        html.dark-mode .msg-bubble.tail-left::after{border-right-color:#fff!important;}
+        html.dark-mode .msg-bubble.tail-right::before,
+        html.dark-mode .msg-bubble.tail-right::after{border-left-color:#333!important;}
+        html.dark-mode .letter-tab,html.dark-mode .diary-tab{color:#aaa!important;}
+        html.dark-mode .letter-tab.active,html.dark-mode .diary-tab.active{color:#fff!important;}
+        html.dark-mode .desktop-page{background:transparent!important;}
+        html.dark-mode .dock-bar{background:rgba(45,45,45,0.7)!important;}
+        html.dark-mode .widget-container{background:rgba(45,45,45,0.5)!important;color:#e0e0e0!important;}
+        html.dark-mode .widget-time,html.dark-mode .widget-date{color:#e0e0e0!important;}
+        html.dark-mode .page-indicator{color:#666!important;}
+        html.dark-mode .page-indicator.active{background:#e0e0e0!important;}
+        html.dark-mode .chat-wallpaper{opacity:0.3!important;}
+        html.dark-mode .word-group-tab{background:#333!important;color:#e0e0e0!important;border-color:#555!important;}
+        html.dark-mode .word-group-tab.active{background:#1a1a1a!important;color:#fff!important;}
+        html.dark-mode .plus-item{background:#333!important;}
+        html.dark-mode .export-checkbox{accent-color:#e0e0e0!important;}
+        html.dark-mode .subsection-title{color:#999!important;}

@@ -1,0 +1,477 @@
+/* ta.css - 从 style.css 拆分 */
+
+    /* ========== Ta的传讯 App 样式 (可爱手帐BlackBerry风) ========== */
+    .ta-app-page {
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 500; display: none; flex-direction: column;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+        background: linear-gradient(180deg, #d6ecff 0%, #e8f4f8 50%, #f0f8ff 100%);
+        color: #4a6a8a;
+        overflow: hidden;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+    }
+    /* 背景装饰星星 */
+    .ta-bg-stars {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; overflow: hidden; z-index: 0;
+    }
+    .ta-bg-stars .star {
+        position: absolute; width: 2px; height: 2px; background: #a8d4ff;
+        border-radius: 50%; opacity: 0; animation: taStarTwinkle 3s infinite ease-in-out;
+    }
+    @keyframes taStarTwinkle {
+        0%,100%{opacity:0;transform:scale(0.5)}
+        50%{opacity:0.7;transform:scale(1.2)}
+    }
+    /* 背景网格 - 浅色手帐纸 */
+    .ta-bg-grid {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; z-index: 0;
+        background-image:
+            radial-gradient(circle, rgba(168,212,255,0.15) 1px, transparent 1px);
+        background-size: 20px 20px;
+    }
+    /* BlackBerry手机外壳 - 宽矮型便于操作 */
+    .ta-device {
+        position: relative;
+        z-index: 2;
+        width: 82%;
+        min-width: 380px;
+        max-width: 650px;
+        height: 82%;
+        max-height: 700px;
+        background: linear-gradient(180deg, #f5f5f5 0%, #e8e8e8 100%);
+        border-radius: 28px;
+        border: 3px solid #d0d0d0;
+        box-shadow: 0 12px 40px rgba(100,150,200,0.3), inset 0 1px 3px rgba(255,255,255,0.8);
+        display: flex;
+        flex-direction: column;
+        padding: 14px 12px 12px;
+        overflow: hidden;
+    }
+    /* 手机听筒和摄像头区域 */
+    .ta-device-top {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 4px 0 8px;
+        flex-shrink: 0;
+    }
+    .ta-device-speaker {
+        width: 50px; height: 5px; border-radius: 3px;
+        background: #c0c0c0;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .ta-device-camera {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: #888;
+        box-shadow: inset 0 0 2px rgba(0,0,0,0.5);
+    }
+    .ta-device-led {
+        width: 4px; height: 4px; border-radius: 50%;
+        background: #a8d4ff;
+        box-shadow: 0 0 4px rgba(168,212,255,0.8);
+    }
+    .ta-brand {
+        font-size: 10px; color: #aaa; font-weight: 600;
+        margin-left: 6px; letter-spacing: 0.5px;
+    }
+    /* 屏幕区域：占大部分 */
+    .ta-screen {
+        flex: 1 1 auto;
+        max-height: none;
+        min-height: 220px;
+        background: #e8f4f8;
+        border-radius: 12px;
+        border: 2px solid #c8c8c8;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        box-shadow: inset 0 1px 4px rgba(0,0,0,0.1);
+    }
+    /* 屏幕装饰星星 */
+    .ta-screen-sparkle {
+        position: absolute;
+        width: 14px; height: 14px;
+        pointer-events: none;
+        opacity: 0.5;
+        z-index: 1;
+    }
+    .ta-screen-sparkle.tl { top: 6px; left: 6px; }
+    .ta-screen-sparkle.br { bottom: 6px; right: 6px; }
+    /* 通用面板 */
+    .ta-panel {
+        position: relative; z-index: 1;
+        background: rgba(255, 255, 255, 0.65);
+        -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+        border: 1px solid rgba(168, 212, 255, 0.5);
+        box-shadow: 0 2px 12px rgba(168, 212, 255, 0.15);
+        border-radius: 14px;
+    }
+    /* ---- 输入页 ---- */
+    .ta-input-page {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        z-index: 10;
+        padding: 16px;
+    }
+    .ta-input-page .ta-title {
+        font-size: 16px; font-weight: 600; margin-bottom: 20px;
+        color: #5a8ab8;
+        text-shadow: 0 0 6px rgba(168,212,255,0.4);
+        letter-spacing: 1px;
+        text-align: center;
+    }
+    .ta-input-page .ta-input-wrap {
+        width: 90%; max-width: 240px; position: relative;
+    }
+    .ta-input-page .ta-input {
+        width: 100%; padding: 10px 14px; border-radius: 10px;
+        border: 1.5px solid rgba(168,212,255,0.6);
+        background: rgba(255,255,255,0.8);
+        -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+        color: #4a6a8a; font-size: 13px; outline: none;
+        box-shadow: 0 2px 8px rgba(168,212,255,0.1);
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .ta-input-page .ta-input::placeholder { color: rgba(120,160,200,0.6); }
+    .ta-input-page .ta-input:focus {
+        border-color: rgba(120,180,240,0.9);
+        box-shadow: 0 0 10px rgba(168,212,255,0.3);
+    }
+    .ta-input-page .ta-btn {
+        width: 100%; margin-top: 14px; padding: 10px 0;
+        border-radius: 10px; border: 1.5px solid rgba(168,212,255,0.6);
+        background: rgba(168,212,255,0.15);
+        color: rgba(120,160,200,0.5); font-size: 13px; font-weight: 600;
+        cursor: not-allowed; transition: all 0.3s; letter-spacing: 1px;
+    }
+    .ta-input-page .ta-btn.active {
+        color: #4a8ac8; cursor: pointer;
+        border-color: rgba(120,180,240,0.8);
+        box-shadow: 0 2px 12px rgba(168,212,255,0.3);
+        background: rgba(168,212,255,0.25);
+        animation: taPulse 2s infinite ease-in-out;
+    }
+    @keyframes taPulse {
+        0%,100%{box-shadow:0 2px 8px rgba(168,212,255,0.25)}
+        50%{box-shadow:0 2px 16px rgba(168,212,255,0.5)}
+    }
+    /* ---- 加载页 ---- */
+    .ta-loading-page {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        display: none; flex-direction: column; align-items: center; justify-content: center;
+        z-index: 20;
+        padding: 16px;
+    }
+    .ta-loading-title {
+        font-size: 14px; margin-bottom: 22px;
+        color: #5a8ab8;
+        text-shadow: 0 0 6px rgba(168,212,255,0.3);
+        text-align: center;
+    }
+    .ta-loading-name { color: #4a8ac8; font-weight: 600; }
+    .ta-progress-bar-wrap {
+        width: 80%; max-width: 200px; height: 8px; border-radius: 4px;
+        background: rgba(168,212,255,0.15);
+        border: 1px solid rgba(168,212,255,0.3);
+        overflow: hidden; position: relative;
+    }
+    .ta-progress-bar-fill {
+        width: 0%; height: 100%; border-radius: 4px;
+        background: linear-gradient(90deg, #a8d4ff, #7ab8e8, #a8d4ff);
+        box-shadow: 0 0 8px rgba(168,212,255,0.5);
+        transition: width 0.3s ease;
+    }
+    .ta-progress-text {
+        font-size: 12px; margin-top: 10px; color: rgba(90,138,184,0.7);
+    }
+    .ta-loading-tip {
+        margin-top: 18px; font-size: 12px; color: rgba(90,138,184,0.6);
+        text-align: center; min-height: 32px;
+        text-shadow: 0 0 4px rgba(168,212,255,0.2);
+    }
+    /* ---- 判定页 ---- */
+    .ta-result-page {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        display: none; flex-direction: column; align-items: center; justify-content: center;
+        z-index: 30;
+    }
+    .ta-result-text {
+        font-size: 18px; font-weight: 700; letter-spacing: 2px;
+    }
+    .ta-result-text.success {
+        color: #4a8ac8;
+        text-shadow: 0 0 10px rgba(168,212,255,0.6), 0 0 20px rgba(168,212,255,0.3);
+        animation: taGlow 1.5s infinite ease-in-out;
+    }
+    @keyframes taGlow {
+        0%,100%{text-shadow:0 0 8px rgba(168,212,255,0.5),0 0 16px rgba(168,212,255,0.2)}
+        50%{text-shadow:0 0 14px rgba(168,212,255,0.8),0 0 28px rgba(168,212,255,0.4)}
+    }
+    .ta-result-text.fail {
+        color: #e88a8a;
+        text-shadow: 0 0 8px rgba(232,138,138,0.5);
+        animation: taFailBlink 0.5s infinite;
+    }
+    @keyframes taFailBlink {
+        0%,100%{opacity:1} 50%{opacity:0.3}
+    }
+    /* ---- 聊天页 ---- */
+    .ta-chat-page {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        display: none; flex-direction: column; z-index: 40;
+    }
+    .ta-chat-header {
+        padding: 8px 10px 6px; text-align: center; position: relative;
+        border-bottom: 1px solid rgba(168,212,255,0.3);
+        background: rgba(255,255,255,0.5);
+        -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+        flex-shrink: 0;
+    }
+    .ta-chat-header .ta-chat-partner {
+        font-size: 13px; font-weight: 600; color: #4a8ac8;
+        text-shadow: 0 0 4px rgba(168,212,255,0.3);
+    }
+    .ta-chat-header .ta-chat-timer {
+        font-size: 14px; font-weight: 700; margin-top: 2px;
+        color: #5a9ad8;
+        text-shadow: 0 0 6px rgba(168,212,255,0.4);
+        letter-spacing: 1px;
+    }
+    .ta-chat-header .ta-chat-timer.warning {
+        color: #e8788a !important;
+        text-shadow: 0 0 6px rgba(232,120,138,0.6) !important;
+        animation: taFailBlink 0.6s infinite;
+    }
+    .ta-chat-messages {
+        flex: 1; overflow-y: auto; padding: 8px 10px; z-index: 1;
+        display: flex; flex-direction: column; gap: 6px;
+        position: relative;
+    }
+    .ta-chat-messages::-webkit-scrollbar { width: 3px; }
+    .ta-chat-messages::-webkit-scrollbar-thumb { background: rgba(168,212,255,0.4); border-radius: 3px; }
+    /* 回到最新消息按钮 */
+    .ta-scroll-bottom-btn {
+        position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+        width: 32px; height: 32px; border-radius: 50%;
+        background: rgba(168,212,255,0.92); border: 1px solid rgba(168,212,255,0.6);
+        cursor: pointer; display: none; z-index: 10;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+        align-items: center; justify-content: center;
+        transition: opacity .2s;
+    }
+    .ta-scroll-bottom-btn.show { display: flex; }
+    /* 气泡 */
+    .ta-msg-row { display: flex; align-items: flex-end; max-width: 85%; }
+    .ta-msg-row.them { align-self: flex-start; }
+    .ta-msg-row.me { align-self: flex-end; }
+    .ta-msg-bubble {
+        padding: 7px 11px; border-radius: 12px; font-size: 12px;
+        line-height: 1.5; word-break: break-all; position: relative;
+        max-width: 100%;
+    }
+    .ta-msg-row.them .ta-msg-bubble {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(168,212,255,0.4);
+        box-shadow: 0 1px 6px rgba(168,212,255,0.12);
+        border-bottom-left-radius: 4px;
+        color: #4a6a8a;
+    }
+    .ta-msg-row.me .ta-msg-bubble {
+        background: rgba(168,212,255,0.35);
+        border: 1px solid rgba(120,180,240,0.5);
+        box-shadow: 0 1px 6px rgba(120,180,240,0.15);
+        border-bottom-right-radius: 4px;
+        color: #3a5a7a;
+    }
+    .ta-msg-time {
+        font-size: 9px; color: rgba(120,160,200,0.5); margin-top: 2px;
+    }
+    /* 摩斯密码气泡 */
+    .ta-morse-bubble { display:flex; flex-direction:column; align-items:flex-start; gap:6px; min-width:120px; }
+    .ta-morse-text { font-family:'Courier New',monospace; font-size:13px; letter-spacing:1px; color:#3a5a7a; word-break:keep-all; }
+    .ta-morse-flash {
+        display:inline-block; width:10px; height:10px; border-radius:50%;
+        background:rgba(168,212,255,0.3); transition:background 0.05s;
+    }
+    .ta-morse-flash.on { background:#5ba8f5; box-shadow:0 0 8px rgba(91,168,245,0.8); }
+    .ta-decode-btn {
+        padding:4px 14px; border:none; border-radius:10px; font-size:11px;
+        background:rgba(91,168,245,0.15); color:#5ba8f5; cursor:pointer;
+        font-family:inherit; align-self:flex-end;
+    }
+    .ta-decode-btn:active { background:rgba(91,168,245,0.3); }
+    .ta-morse-decoded { font-size:13px; color:#3a5a7a; font-style:italic; }
+    html.dark-mode .ta-morse-text { color:#c8d8e8; }
+    html.dark-mode .ta-morse-flash { background:rgba(168,212,255,0.2); }
+    html.dark-mode .ta-morse-flash.on { background:#7bc0ff; box-shadow:0 0 8px rgba(123,192,255,0.8); }
+    html.dark-mode .ta-decode-btn { background:rgba(123,192,255,0.15); color:#7bc0ff; }
+    html.dark-mode .ta-morse-decoded { color:#e0e8f0; }
+    /* 打字指示 */
+    .ta-typing-indicator {
+        align-self: flex-start; padding: 7px 12px;
+        background: rgba(255,255,255,0.7); border: 1px solid rgba(168,212,255,0.3);
+        border-radius: 12px; border-bottom-left-radius: 4px;
+        font-size: 11px; color: rgba(120,160,200,0.6);
+        display: none;
+        text-shadow: 0 0 4px rgba(168,212,255,0.2);
+    }
+    .ta-typing-indicator .cursor-blink {
+        display: inline-block; width: 2px; height: 12px; vertical-align: middle;
+        background: #5a9ad8; margin-left: 2px;
+        animation: taCursorBlink 0.8s infinite;
+    }
+    @keyframes taCursorBlink {
+        0%,100%{opacity:1} 50%{opacity:0}
+    }
+    /* 底部 */
+    .ta-chat-footer {
+        padding: 6px 8px 8px; position: relative; z-index: 2;
+        border-top: 1px solid rgba(168,212,255,0.3);
+        background: rgba(255,255,255,0.6);
+        -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+        flex-shrink: 0;
+    }
+    .ta-request-btn {
+        width: 100%; padding: 7px 0; margin-bottom: 6px;
+        border-radius: 8px; border: 1.5px solid rgba(168,212,255,0.6);
+        background: rgba(168,212,255,0.15);
+        color: #4a8ac8; font-size: 12px; font-weight: 600;
+        cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+        box-shadow: 0 1px 6px rgba(168,212,255,0.15);
+        position: relative; overflow: hidden;
+    }
+    .ta-request-btn:active:not(.cooldown) {
+        background: rgba(168,212,255,0.3);
+        box-shadow: 0 1px 10px rgba(168,212,255,0.3);
+    }
+    .ta-request-btn.cooldown {
+        opacity: 0.5; cursor: not-allowed;
+        color: rgba(120,160,200,0.5);
+    }
+    .ta-request-btn.success-flash {
+        animation: taBtnSuccessFlash 0.6s;
+    }
+    @keyframes taBtnSuccessFlash {
+        0%{background:rgba(168,212,255,0.15)}
+        50%{background:rgba(168,212,255,0.5);box-shadow:0 0 16px rgba(168,212,255,0.5)}
+        100%{background:rgba(168,212,255,0.15)}
+    }
+    .ta-chat-input-row {
+        display: flex; gap: 6px; align-items: center;
+    }
+    .ta-chat-input {
+        flex: 1; padding: 8px 12px; border-radius: 8px;
+        border: 1.5px solid rgba(168,212,255,0.4);
+        background: rgba(255,255,255,0.8);
+        -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+        color: #4a6a8a; font-size: 13px; outline: none;
+        box-shadow: 0 1px 4px rgba(168,212,255,0.1);
+        -webkit-user-select: text; user-select: text;
+    }
+    .ta-chat-input:disabled {
+        opacity: 0.4; cursor: not-allowed;
+    }
+    .ta-chat-input::placeholder { color: rgba(120,160,200,0.4); }
+    .ta-chat-send-btn {
+        padding: 8px 14px; border-radius: 8px;
+        border: 1.5px solid rgba(168,212,255,0.6);
+        background: rgba(168,212,255,0.25);
+        color: #4a8ac8; font-size: 12px; cursor: pointer;
+        transition: all 0.3s; white-space: nowrap;
+    }
+    .ta-chat-send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .ta-chat-send-btn:active:not(:disabled) {
+        background: rgba(168,212,255,0.45);
+        box-shadow: 0 1px 8px rgba(168,212,255,0.4);
+    }
+    /* 宇宙消息提示 */
+    .ta-cosmic-msg {
+        text-align: center; font-size: 11px; padding: 2px 0 6px;
+        min-height: 18px;
+    }
+    .ta-cosmic-msg.wait { color: rgba(232,170,100,0.7); text-shadow: 0 0 4px rgba(232,170,100,0.3); }
+    .ta-cosmic-msg.allow { color: #4a8ac8; text-shadow: 0 0 6px rgba(168,212,255,0.4); animation: taGlow 1s infinite; }
+    /* BlackBerry物理键盘：缩小 */
+    .ta-keyboard {
+        flex-shrink: 0;
+        padding: 5px 8px 5px;
+        background: linear-gradient(180deg, #e0e0e0 0%, #d5d5d5 100%);
+        border-top: 2px solid #c0c0c0;
+        border-radius: 0 0 10px 10px;
+    }
+    .ta-keyboard-row {
+        display: flex;
+        justify-content: center;
+        gap: 4px;
+        margin-bottom: 3px;
+    }
+    .ta-keyboard-row:last-child { margin-bottom: 0; }
+    .ta-key {
+        flex: 1;
+        max-width: 36px;
+        min-width: 20px;
+        height: 26px;
+        background: linear-gradient(180deg, #f5f5f5 0%, #e0e0e0 100%);
+        border: 1px solid #c0c0c0;
+        border-radius: 4px;
+        font-size: 11px;
+        color: #666;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.8);
+        transition: all 0.1s;
+        -webkit-tap-highlight-color: transparent;
+        line-height: 1;
+        text-align: center;
+        font-family: -apple-system, sans-serif;
+    }
+    .ta-key:active {
+        background: linear-gradient(180deg, #d0d0d0 0%, #c5c5c5 100%);
+        box-shadow: 0 1px 1px rgba(0,0,0,0.1), inset 0 1px 2px rgba(0,0,0,0.1);
+        transform: translateY(1px);
+    }
+    .ta-key.alt { font-size: 7px; color: #999; }
+    .ta-key.wide { max-width: 40px; }
+    .ta-key.space { max-width: 80px; }
+    .ta-key .key-main { font-weight: 600; color: #4a4a4a; }
+    .ta-key .key-sub { font-size: 7px; color: #999; margin-top: 0; }
+    .ta-key-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+    /* 断开覆盖 */
+    .ta-disconnect-overlay {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        display: none; flex-direction: column; align-items: center; justify-content: center;
+        z-index: 50; background: rgba(232,244,248,0.9);
+        border-radius: 12px;
+    }
+    .ta-disconnect-text {
+        font-size: 18px; font-weight: 700; color: #e8788a;
+        text-shadow: 0 0 10px rgba(232,120,138,0.6);
+        animation: taFailBlink 0.5s infinite;
+        letter-spacing: 2px;
+    }
+    /* 暗黑模式适配 */
+    html.dark-mode .ta-app-page { background: linear-gradient(180deg, #1a2540 0%, #2a3550 100%); }
+    html.dark-mode .ta-device { background: linear-gradient(180deg, #3a3a3a 0%, #2d2d2d 100%); border-color: #555; }
+    html.dark-mode .ta-screen { background: #1a2a3a; border-color: #555; }
+    html.dark-mode .ta-panel { background: rgba(40,50,70,0.6); }
+    html.dark-mode .ta-key { background: linear-gradient(180deg, #4a4a4a 0%, #3a3a3a 100%); border-color: #555; color: #aaa; }
+    html.dark-mode .ta-key .key-main { color: #ddd; }
+    html.dark-mode .ta-chat-header, html.dark-mode .ta-chat-footer { background: rgba(30,40,60,0.6); }
+    html.dark-mode .ta-msg-row.them .ta-msg-bubble { background: rgba(60,70,90,0.8); color: #c8d8e8; }
+    html.dark-mode .ta-msg-row.me .ta-msg-bubble { background: rgba(80,130,180,0.4); color: #e0e8f0; }
+    html.dark-mode .ta-chat-input { background: rgba(40,50,70,0.8); color: #c8d8e8; }
+
