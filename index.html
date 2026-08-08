@@ -1,0 +1,2902 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<!-- iOS standalone PWA 视口修复 -->
+<script>
+        if (navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+            document.documentElement.style.setProperty('--app-height', '100vh');
+        }
+    </script>
+<link rel="stylesheet" href="css/style.css">
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="Beloved Time" name="apple-mobile-web-app-title"/>
+<meta content="#f7f7f7" id="themeColorMeta" name="theme-color"/>
+<link href="./manifest.json" rel="manifest"/>
+<link href="./icon-192.png" rel="apple-touch-icon"/>
+<link href="./icon-192.png" rel="icon" type="image/png"/>
+<title>Beloved Time · 双屏</title>
+
+
+
+</head>
+<body>
+<!-- 锁屏界面 -->
+<div class="lock-screen-overlay" id="lockScreenOverlay">
+<div class="lock-screen-time-section" id="lockScreenTimeSection" onclick="handleLockScreenTap()">
+<div class="lock-screen-date" id="lockScreenDate">1月1日 周一</div>
+<div class="lock-screen-lunar-date" id="lockScreenLunarDate"></div>
+<div class="lock-screen-time" id="lockScreenTime">00:00</div>
+<div class="lock-screen-tap-hint" id="lockScreenTapHint">点击输入密码</div>
+</div>
+<div class="lock-screen-password-section" id="lockScreenPasswordSection" style="display:none;">
+<div class="lock-screen-error" id="lockScreenError">密码错误，请重试</div>
+<div class="lock-screen-password-dots" id="lockScreenDots">
+<div class="lock-screen-dot"></div>
+<div class="lock-screen-dot"></div>
+<div class="lock-screen-dot"></div>
+<div class="lock-screen-dot"></div>
+<div class="lock-screen-dot"></div>
+<div class="lock-screen-dot"></div>
+</div>
+<div class="lock-screen-keypad" id="lockScreenKeypad">
+<button class="lock-screen-key" onclick="lockScreenInput('1')">1</button>
+<button class="lock-screen-key" onclick="lockScreenInput('2')">2</button>
+<button class="lock-screen-key" onclick="lockScreenInput('3')">3</button>
+<button class="lock-screen-key" onclick="lockScreenInput('4')">4</button>
+<button class="lock-screen-key" onclick="lockScreenInput('5')">5</button>
+<button class="lock-screen-key" onclick="lockScreenInput('6')">6</button>
+<button class="lock-screen-key" onclick="lockScreenInput('7')">7</button>
+<button class="lock-screen-key" onclick="lockScreenInput('8')">8</button>
+<button class="lock-screen-key" onclick="lockScreenInput('9')">9</button>
+<button class="lock-screen-key empty"></button>
+<button class="lock-screen-key" onclick="lockScreenInput('0')">0</button>
+<button class="lock-screen-key delete" onclick="lockScreenDelete()">
+<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- 联系人列表界面 -->
+<div class="contact-list-page" id="contactListPage">
+<div class="cl-profile-header" id="clProfileHeader" onclick="handleProfileHeaderClick(event)">
+<div class="cl-profile-avatar" id="clProfileAvatar" onclick="event.stopPropagation();uploadProfileAvatar()">头像</div>
+</div>
+<div class="cl-profile-info">
+<div class="cl-profile-nickname" id="clProfileNickname" onclick="event.stopPropagation();editProfileNickname()">这里点击更换昵称</div>
+<div class="cl-profile-account" id="clProfileAccount" onclick="event.stopPropagation();editProfileAccount()">@这里点击替换账号</div>
+<div class="cl-profile-bio" id="clProfileBio" onclick="event.stopPropagation();editProfileBio()">这里点击替换文案</div>
+</div>
+<div class="cl-contact-section">
+<div class="cl-contact-label">联系人</div>
+<div class="cl-contact-list" id="contactListBody">
+<div class="contact-list-search" id="clSearchBox" style="display:block;">
+<input type="text" id="contactSearchInput" placeholder="搜索联系人" oninput="filterContacts(this.value)"/>
+</div>
+<div id="contactListItems"></div>
+</div>
+</div>
+<div class="cl-bottom-bar" id="clBottomBar">
+<div class="cl-bottom-btn" id="clSearchBtn" onclick="toggleContactSearch()">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+</div>
+<div class="cl-bottom-btn" id="clAddBtn" onclick="showContactAddOptions()">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</div>
+</div>
+</div>
+<!-- 添加联系人选项弹窗 -->
+<div class="contact-add-modal-overlay" id="contactAddOverlay" onclick="closeContactAddModal()"></div>
+<div class="contact-add-modal" id="contactAddModal">
+<div id="contactAddOptionsView">
+<div class="contact-add-modal-title">添加</div>
+<div class="contact-add-options">
+<div class="contact-add-option" onclick="showAddContactForm()">添加联系人</div>
+</div>
+<div style="margin-top:12px;text-align:center;">
+<span onclick="closeContactAddModal()" style="font-size:14px;color:#999;cursor:pointer;">取消</span>
+</div>
+</div>
+<div id="contactAddFormView" style="display:none;">
+<div class="contact-add-modal-title">添加联系人</div>
+<input type="text" id="newContactName" placeholder="联系人名称" maxlength="20"/>
+<input type="text" id="newContactRemark" placeholder="备注（选填）" maxlength="30"/>
+<div class="contact-add-modal-buttons">
+<button class="cancel" onclick="closeContactAddModal()">取消</button>
+<button class="confirm" onclick="confirmAddContact()">确认</button>
+</div>
+</div>
+<div id="contactCreateGroupView" style="display:none;">
+<div class="contact-add-modal-title">创建群聊</div>
+<input type="text" id="newGroupName" placeholder="群聊名称" maxlength="20"/>
+<div class="group-member-select-label">选择群成员</div>
+<div class="group-member-list" id="groupMemberList"></div>
+<div class="group-member-count" id="groupMemberCount">已选择 1 人</div>
+<div class="contact-add-modal-buttons">
+<button class="cancel" onclick="closeContactAddModal()">取消</button>
+<button class="confirm" onclick="confirmCreateGroup()">确认</button>
+</div>
+</div>
+</div>
+<div class="phone-container" id="phoneContainer">
+<div class="desktop-wrapper" id="desktopWrapper">
+<!-- 壁纸固定层（跟随滑动但不随内容滚动） -->
+<div class="desktop-wallpaper-layer" id="desktopWallpaperLayer">
+<div class="wp-panel"></div>
+<div class="wp-panel"></div>
+<div class="wp-panel"></div>
+</div>
+<!-- 第一页 -->
+<div class="desktop-page page-1">
+<div class="anniversary-widget draggable-group" data-drag-key="anniversary" id="anniversaryWidget" onclick="openAnniversaryEdit()">
+<img alt="" class="bg-image" id="anniversaryBg"/>
+<div class="content">
+<div class="anniversary-title" id="anniversaryTitle">我与你相恋已经</div>
+<div class="anniversary-days" id="anniversaryDays">0 Days</div>
+<div class="anniversary-date" id="anniversaryDate">2024-01-01 星期一</div>
+</div>
+</div>
+<div class="app-section draggable-group" data-drag-key="appSection">
+<div class="app-grid-left">
+<div class="app-item" data-app="chat" onclick="openChat()">
+<div class="app-icon">
+<svg viewbox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+<img alt="" class="custom-image"/>
+</div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">聊天</div>
+</div>
+<div class="app-item" data-app="moments" onclick="openMoments()">
+<div class="app-icon">
+<svg viewbox="0 0 24 24"><rect height="18" rx="2" width="18" x="3" y="3"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>
+<img alt="" class="custom-image"/>
+</div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">朋友圈</div>
+</div>
+<div class="app-item" data-app="diary" onclick="openDiary()">
+<div class="app-icon">
+<svg viewbox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><line x1="8" x2="16" y1="13" y2="13"></line><line x1="8" x2="16" y1="17" y2="17"></line></svg>
+<img alt="" class="custom-image"/>
+</div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">日记</div>
+</div>
+<div class="app-item" data-app="letter" onclick="openLetter()">
+<div class="app-icon">
+<svg viewbox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+<img alt="" class="custom-image"/>
+</div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">信封</div>
+</div>
+</div>
+<div class="square-widget" id="widget1">
+<svg class="widget-placeholder" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><rect height="18" rx="2" width="18" x="3" y="3"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>
+<img alt="" class="widget-image"/>
+</div>
+</div>
+<div class="app-section-bottom draggable-group" data-drag-key="appSectionBottom">
+<div class="square-widget" id="widget2">
+<svg class="widget-placeholder" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><rect height="18" rx="2" width="18" x="3" y="3"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>
+<img alt="" class="widget-image"/>
+</div>
+<div class="app-grid-bottom">
+<div class="app-item" data-app="beautify" onclick="openBeautifyApp()">
+<div class="app-icon">
+<svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+<img alt="" class="custom-image"/>
+</div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">美化</div>
+</div>
+<div class="app-item" data-app="wordcard" onclick="openWordCard()">
+<div class="app-icon">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M4 6h16v12H4z"></path>
+<path d="M8 10h8"></path>
+<path d="M8 14h6"></path>
+</svg>
+<img alt="" class="custom-image"/>
+</div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">字卡</div>
+</div>
+<div class="app-item" data-app="lifedeath" onclick="openLifeDeathApp()">
+<div class="app-icon">
+<svg viewBox="0 0 48 48" width="100%" height="100%"><defs><radialGradient id="mlsjDeskGrad" cx="0.35" cy="0.3" r="0.95"><stop offset="0" stop-color="#8B2A3D"/><stop offset="1" stop-color="#4A0E17"/></radialGradient></defs><rect width="48" height="48" rx="12" fill="#150608"/><path d="M16 19.5c0-3.2 2.6-5.5 5.4-5.5 2 0 3.4 1 4.6 2.6C27.2 15 28.6 14 30.6 14c2.8 0 5.4 2.3 5.4 5.5 0 4.8-5.6 8.5-10 11.5-4.4-3-10-6.7-10-11.5z" fill="url(#mlsjDeskGrad)"/><path d="M20.5 22.5c0-3 2.4-5.2 5-5.2" fill="none" stroke="#F0EAE6" stroke-width="1.1" stroke-linecap="round" opacity="0.7"/></svg>
+<img alt="" class="custom-image"/>
+</div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">默契生死局</div>
+</div>
+<div class="app-item" data-app="album" onclick="openAlbumApp()">
+<div class="app-icon">
+<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="24" y1="5" x2="24" y2="11"/><rect x="12" y="11" width="24" height="28" rx="2.5"/><rect x="16" y="15" width="16" height="15" rx="1.5"/><circle cx="19" cy="19" r="1.6" fill="currentColor" stroke="none"/><path d="M16 27l4-4 3 2 4-5 5 7"/></svg>
+<img alt="" class="custom-image"/>
+</div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">相册寄语</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 第二页 -->
+<div class="desktop-page page-2">
+<div class="period-calendar draggable-group" data-drag-key="period" id="periodCalendar" onclick="openPeriodBgEdit()">
+<img alt="" class="bg-image" id="periodBg"/>
+<div class="cal-content">
+<div class="cal-month" id="calMonth">2026年7月</div>
+<div class="cal-days-grid" id="calDaysGrid"></div>
+</div>
+</div>
+<div class="word-card draggable-group" data-drag-key="wordCard" id="wordCard" onclick="openWordCardEdit()">
+<img alt="" class="bg-image" id="wordCardBg"/>
+<div class="word-card-content" id="wordCardContent">☆*:.｡. o(≧▽≦)o .｡.:*☆等待对方更新中……</div>
+</div>
+<div class="third-row draggable-group" data-drag-key="thirdRow">
+<div class="time-group">
+<div class="time-widget" id="timeHis" onclick="openTimeEdit(this)">
+<img alt="" class="bg-image"/>
+<div class="time-content">
+<div class="time-label">对方时间</div>
+<div class="time-value" id="hisTimeDisplay">--:--:--</div>
+</div>
+</div>
+<div class="time-widget" id="timeMine" onclick="openTimeEdit(this)">
+<img alt="" class="bg-image"/>
+<div class="time-content">
+<div class="time-label">我方时间 (北京)</div>
+<div class="time-value" id="mineTimeDisplay">--:--:--</div>
+</div>
+</div>
+</div>
+<div class="app-grid-2x2">
+<div class="app-item" data-app="songwrite" onclick="openSongwriteApp()">
+<div class="app-icon">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+<img alt="" class="custom-image"/>
+</div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">一起写歌</div>
+</div>
+<div class="app-item" data-app="goban" onclick="openGobanApp()">
+<div class="app-icon">
+<svg viewbox="0 0 24 24"><rect height="18" rx="2" width="18" x="3" y="3"></rect><line x1="3" x2="21" y1="9" y2="9"></line><line x1="3" x2="21" y1="15" y2="15"></line><line x1="9" x2="9" y1="3" y2="21"></line><line x1="15" x2="15" y1="3" y2="21"></line></svg>
+<img alt="" class="custom-image"/>
+</div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">五子棋</div>
+</div>
+<div class="app-item" data-app="shop">
+<div class="app-icon">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+<img alt="" class="custom-image"/>
+</div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">次元购物城</div>
+</div>
+<div class="app-item" data-app="balance" onclick="openBalanceApp()">
+<div class="app-icon">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24">
+<rect height="14" rx="2" width="20" x="2" y="5"></rect>
+<line x1="6" x2="18" y1="9" y2="9"></line>
+<circle cx="12" cy="12" fill="currentColor" r="2"></circle>
+<line x1="8" x2="16" y1="14" y2="14"></line>
+</svg>
+<img alt="" class="custom-image"/>
+</div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">余额</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 第三页 -->
+<div class="desktop-page page-3">
+<div class="p3-music-widget draggable-group" data-drag-key="p3Music" id="p3MusicWidget">
+<div class="p3-mw-top">
+<div class="p3-mw-avatars">
+<div class="p3-mw-avatar-pair">
+<img class="p3-mw-avatar left" id="p3AvatarMine" alt=""/>
+<img class="p3-mw-avatar" id="p3AvatarOther" alt=""/>
+</div>
+<div class="p3-mw-info" id="p3MwInfo">相距 -- 公里 · 一起听了 --</div>
+</div>
+<div class="p3-mw-player">
+<div class="p3-mw-song" id="p3MwSong">未在播放</div>
+<div class="p3-mw-progress" id="p3MwProgress">
+<div class="p3-mw-progress-fill" id="p3MwFill"></div>
+<div class="p3-mw-progress-knob" id="p3MwKnob" style="left:0%"></div>
+</div>
+<div class="p3-mw-controls">
+<button class="p3-mw-btn fav" id="p3MwFav" type="button"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.6-9.3-8.4C1.1 9.4 2.3 6 5.4 6c1.9 0 3.1 1.1 3.8 2.3C9.9 7.1 11.1 6 13 6c3.1 0 4.3 3.4 2.7 6.6C19 16.4 12 21 12 21z"/></svg></button>
+<button class="p3-mw-btn" id="p3MwPrev" type="button"><svg viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg></button>
+<button class="p3-mw-btn play" id="p3MwPlay" type="button"><svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg></button>
+<button class="p3-mw-btn" id="p3MwNext" type="button"><svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
+</div>
+</div>
+</div>
+</div>
+<div class="p3-polaroids p3-polaroids-top draggable-group" data-drag-key="p3Polaroids" id="p3Polaroids">
+  <div class="p3-polaroids-line"></div>
+  <div class="p3-polaroid-item" data-idx="0">
+    <div class="p3-polaroid-item-inner">
+      <div class="p3-polaroid-item-img" id="p3PolaroidImg0"><div class="p3-polaroid-item-ph">点击<br>替换</div><img alt="" style="display:none"/></div>
+      <div class="p3-polaroid-item-cap">♡</div>
+    </div>
+  </div>
+  <div class="p3-polaroid-item" data-idx="1">
+    <div class="p3-polaroid-item-inner">
+      <div class="p3-polaroid-item-img" id="p3PolaroidImg1"><div class="p3-polaroid-item-ph">点击<br>替换</div><img alt="" style="display:none"/></div>
+      <div class="p3-polaroid-item-cap">♡</div>
+    </div>
+  </div>
+  <div class="p3-polaroid-item" data-idx="2">
+    <div class="p3-polaroid-item-inner">
+      <div class="p3-polaroid-item-img" id="p3PolaroidImg2"><div class="p3-polaroid-item-ph">点击<br>替换</div><img alt="" style="display:none"/></div>
+      <div class="p3-polaroid-item-cap">♡</div>
+    </div>
+  </div>
+</div>
+<div class="p3-avatar-section draggable-group" data-drag-key="p3MidRow">
+  <div class="p3-input-col p3-input-left">
+    <input class="p3-glass-input" type="text" placeholder="输入" maxlength="20" data-p3-input="0" oninput="autoSizeInput(this);saveP3InputTexts()"/>
+    <input class="p3-glass-input" type="text" placeholder="输入" maxlength="20" data-p3-input="1" oninput="autoSizeInput(this);saveP3InputTexts()"/>
+  </div>
+  <div class="p3-center-avatar" id="p3CenterAvatar" onclick="replaceP3Avatar(event)">
+    <div class="p3-avatar-ph">点击<br>替换</div>
+    <img alt="" style="display:none"/>
+  </div>
+  <div class="p3-input-col p3-input-right">
+    <input class="p3-glass-input" type="text" placeholder="输入" maxlength="20" data-p3-input="2" oninput="autoSizeInput(this);saveP3InputTexts()"/>
+    <input class="p3-glass-input" type="text" placeholder="输入" maxlength="20" data-p3-input="3" oninput="autoSizeInput(this);saveP3InputTexts()"/>
+  </div>
+</div>
+<div class="p3-app-grid draggable-group" data-drag-key="p3AppGrid" id="p3AppGrid">
+<div class="app-item" data-app="listentogether" onclick="openLTApp()">
+<div class="app-icon"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><img alt="" class="custom-image"/></div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">一起听歌</div>
+</div>
+<div class="app-item" data-app="tarot" onclick="openTarotApp()">
+<div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><img alt="" class="custom-image"/></div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">塔罗牌</div>
+</div>
+<div class="app-item" data-app="ta" onclick="openTaApp()">
+<div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg><img alt="" class="custom-image"/></div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">Ta的传讯</div>
+</div>
+<div class="app-item" data-app="wordlib" onclick="openWordLibApp()">
+<div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h6"/><path d="M9 11h6"/></svg><img alt="" class="custom-image"/></div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">词库管理</div>
+</div>
+</div>
+</div>
+</div>
+<div class="page-indicator">
+<div class="page-dot active" data-page="0"></div>
+<div class="page-dot" data-page="1"></div>
+<div class="page-dot" data-page="2"></div>
+</div>
+<div class="dock-bar">
+<div class="app-item" data-app="settings">
+<div class="app-icon">
+<svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+<img alt="" class="custom-image"/>
+</div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">设置</div>
+</div>
+<div class="app-item" data-app="storage">
+<div class="app-icon">
+<svg viewbox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+<img alt="" class="custom-image"/>
+</div>
+<div class="app-name" onclick="event.stopPropagation(); editAppName(this)">存储数据</div>
+</div>
+</div>
+<!-- 聊天主界面 -->
+<div class="chat-page" id="chatPage">
+<!-- 聊天底栏标签 -->
+<div class="chat-header">
+<div class="chat-back" onclick="backToContactList()">‹</div>
+<div class="chat-title" id="chatTitle">对方</div>
+<div class="chat-menu" onclick="openChatSettings()">⋯</div>
+</div>
+<div class="chat-messages" id="chatMessages"></div>
+<div class="scroll-bottom-btn" id="scrollBottomBtn" onclick="scrollToBottomSmooth()" style="display:none;position:fixed;bottom:140px;right:16px;width:40px;height:40px;border-radius:50%;background:rgba(74,144,217,0.9);color:#fff;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:500;box-shadow:0 2px 8px rgba(0,0,0,0.2);transition:opacity 0.3s;">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+</div>
+<div class="chat-footer">
+<div class="chat-btn" data-icon="emoji" onclick="toggleEmojiPanel()">
+<svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" x2="9.01" y1="9" y2="9"></line><line x1="15" x2="15.01" y1="9" y2="9"></line></svg>
+</div>
+<div class="chat-input-wrap">
+<input class="chat-input" id="chatInput" onkeydown="handleChatEnter(event)" placeholder="输入消息" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text"/>
+</div>
+<div class="chat-btn" data-icon="receive" onclick="triggerReceive()">
+<svg viewbox="0 0 24 24"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+</div>
+<div class="chat-btn" data-icon="plus" onclick="togglePlusPanel()">
+<svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="16"></line><line x1="8" x2="16" y1="12" y2="12"></line></svg>
+</div>
+</div>
+<div class="emoji-panel" id="emojiPanel">
+<div class="emoji-tabs">
+<div class="emoji-tab active" data-tab="mine" onclick="switchEmojiTab('mine')">我的表情</div>
+<div class="emoji-tab" data-tab="other" onclick="switchEmojiTab('other')">对方表情</div>
+</div>
+<div class="emoji-grid" id="emojiGridMine">
+<div class="emoji-add" onclick="addEmoji('mine')">
+<svg viewbox="0 0 24 24"><line x1="12" x2="12" y1="5" y2="19"></line><line x1="5" x2="19" y1="12" y2="12"></line></svg>
+</div>
+</div>
+<div class="emoji-grid" id="emojiGridOther" style="display:none;">
+<div class="emoji-add" onclick="addEmoji('other')">
+<svg viewbox="0 0 24 24"><line x1="12" x2="12" y1="5" y2="19"></line><line x1="5" x2="19" y1="12" y2="12"></line></svg>
+</div>
+</div>
+</div>
+<div class="plus-panel" id="plusPanel">
+<div class="plus-grid">
+<div class="plus-item" data-icon="transfer" onclick="openTransferModal()">
+<div class="plus-icon">
+<svg viewbox="0 0 24 24"><rect height="14" rx="2" width="20" x="2" y="5"></rect><line x1="12" x2="12" y1="10" y2="14"></line><path d="M8 12h8"></path></svg>
+</div>
+<span>转账</span>
+</div>
+<div class="plus-item" data-icon="nudge" onclick="openNudgeModal()">
+<div class="plus-icon">
+<svg viewbox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7 3 9 3 14h6c0-5 3-7 3-14z"></path><line x1="12" x2="12" y1="2" y2="3"></line></svg>
+</div>
+<span>拍一拍</span>
+</div>
+<div class="plus-item" data-icon="blindCard" onclick="openBlindCardModal()">
+<div class="plus-icon">
+<svg viewbox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" ry="3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></rect><path d="M12 9l2 2-2 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="8" cy="12" r="1" fill="currentColor"></circle><circle cx="16" cy="12" r="1" fill="currentColor"></circle></svg>
+</div>
+<span>盲选抽牌</span>
+</div>
+<div class="plus-item" data-icon="randomFood" id="randomFoodPlusBtn">
+<div class="plus-icon">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16a8 8 0 0 1-16 0z"/><path d="M2 11h20"/><path d="M12 7V4"/><path d="M8 5h8"/></svg>
+</div>
+<span>今日抽抽抽</span>
+</div>
+<div class="plus-item" data-icon="image" onclick="sendImageMsg()">
+<div class="plus-icon">
+<svg viewbox="0 0 24 24"><rect height="18" rx="2" width="18" x="3" y="3"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>
+</div>
+<span>图片</span>
+</div>
+<div class="plus-item" data-icon="video" onclick="startVideoCall()">
+<div class="plus-icon">
+<svg viewbox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect height="14" rx="2" width="15" x="1" y="5"></rect></svg>
+</div>
+<span>视频通话</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 聊天设置界面 -->
+<div class="settings-page" id="settingsPage">
+<div class="settings-header">
+<div class="settings-back" onclick="closeChatSettings()">‹</div>
+<div class="settings-title">聊天设置</div>
+
+</div>
+<div class="settings-content">
+<div class="settings-section">
+<div class="settings-item">
+<div class="avatar-preview" id="otherAvatarPreview"></div>
+<div class="settings-info">
+<div class="settings-label">对方昵称</div>
+<div class="settings-value" id="otherNicknameValue" onclick="editOtherNickname()">点击修改</div>
+</div>
+<div class="settings-btn" onclick="changeOtherAvatar()">修改头像</div>
+</div>
+<div class="settings-item">
+<div class="avatar-preview" id="myAvatarPreview"></div>
+<div class="settings-info">
+<div class="settings-label">我方昵称</div>
+<div class="settings-value" id="myNicknameValue" onclick="editMyNickname()">点击修改</div>
+</div>
+<div class="settings-btn" onclick="changeMyAvatar()">修改头像</div>
+</div>
+<div class="settings-subsection settings-float-box">
+<div class="settings-row">
+<label>调节对方头像大小</label>
+<input id="otherAvatarSizeSlider" max="60" min="30" oninput="updateOtherAvatarSize(this.value)" type="range" value="40"/>
+<span id="otherAvatarSizeVal">40</span><span style="font-size:10px;color:#999;margin-left:4px;">30-60</span>
+</div>
+<div class="settings-row">
+<label>调节我方头像大小</label>
+<input id="myAvatarSizeSlider" max="60" min="30" oninput="updateMyAvatarSize(this.value)" type="range" value="40"/>
+<span id="myAvatarSizeVal">40</span><span style="font-size:10px;color:#999;margin-left:4px;">30-60</span>
+</div>
+<div class="settings-row">
+<label>调节对方头像圆方程度</label>
+<input id="otherAvatarRadiusSlider" max="50" min="0" oninput="updateOtherAvatarRadius(this.value)" type="range" value="8"/>
+<span id="otherAvatarRadiusVal">8</span><span style="font-size:10px;color:#999;margin-left:4px;">0-50</span>
+</div>
+<div class="settings-row">
+<label>调节我方头像圆方程度</label>
+<input id="myAvatarRadiusSlider" max="50" min="0" oninput="updateMyAvatarRadius(this.value)" type="range" value="8"/>
+<span id="myAvatarRadiusVal">8</span><span style="font-size:10px;color:#999;margin-left:4px;">0-50</span>
+</div>
+</div>
+<div class="settings-subsection settings-float-box">
+<div class="subsection-title">对方头像框</div>
+<div class="frame-grid" id="otherFrameGrid">
+<div class="frame-item active" data-frame="none" onclick="selectFrame('other', 'none')">无框</div>
+<div class="frame-item frame-add" onclick="uploadFrame('other')">
+<svg viewbox="0 0 24 24"><line x1="12" x2="12" y1="5" y2="19"></line><line x1="5" x2="19" y1="12" y2="12"></line></svg>
+</div>
+</div>
+</div>
+<div class="settings-subsection settings-float-box">
+<div class="subsection-title">我方头像框</div>
+<div class="frame-grid" id="myFrameGrid">
+<div class="frame-item active" data-frame="none" onclick="selectFrame('my', 'none')">无框</div>
+<div class="frame-item frame-add" onclick="uploadFrame('my')">
+<svg viewbox="0 0 24 24"><line x1="12" x2="12" y1="5" y2="19"></line><line x1="5" x2="19" y1="12" y2="12"></line></svg>
+</div>
+</div>
+</div>
+</div>
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">气泡设置</div>
+<div class="bubble-preview" id="bubbleSettingsPreview"></div>
+<div class="settings-grid-2">
+<div class="color-setting">
+<label>我方气泡背景色</label>
+<input id="myBubbleBg" oninput="updateBubbleStyle()" type="color" value="#1a1a1a"/>
+</div>
+<div class="color-setting">
+<label>对方气泡背景色</label>
+<input id="otherBubbleBg" oninput="updateBubbleStyle()" type="color" value="#4a4a4a"/>
+</div>
+<div class="color-setting">
+<label>我方气泡边框色</label>
+<input id="myBubbleBorder" oninput="updateBubbleStyle()" type="color" value="#1a1a1a"/>
+</div>
+<div class="color-setting">
+<label>对方气泡边框色</label>
+<input id="otherBubbleBorder" oninput="updateBubbleStyle()" type="color" value="#4a4a4a"/>
+</div>
+<div class="color-setting">
+<label>我方字体颜色</label>
+<input id="myBubbleText" oninput="updateBubbleStyle()" type="color" value="#ffffff"/>
+</div>
+<div class="color-setting">
+<label>对方字体颜色</label>
+<input id="otherBubbleText" oninput="updateBubbleStyle()" type="color" value="#000000"/>
+</div>
+<div class="slider-setting">
+<label>气泡圆方程度</label>
+<input id="bubbleRadius" max="20" min="0" oninput="updateBubbleStyle()" type="range" value="8"/>
+</div>
+<div class="slider-setting">
+<label>修改对方气泡字体大小</label>
+<input id="otherBubbleFontSize" max="20" min="12" oninput="updateBubbleStyle()" type="range" value="14"/>
+</div>
+<div class="slider-setting">
+<label>修改我方气泡字体大小</label>
+<input id="myBubbleFontSize" max="20" min="12" oninput="updateBubbleStyle()" type="range" value="14"/>
+</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">开启气泡小尾巴</span>
+<span class="ios-switch"><input id="bubbleTail" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">开启对方小尾巴</span>
+<span class="ios-switch"><input id="otherTailEnabled" onchange="updateBubbleStyle()" type="checkbox" checked/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">开启我方小尾巴</span>
+<span class="ios-switch"><input id="myTailEnabled" onchange="updateBubbleStyle()" type="checkbox" checked/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">对方仅第一条消息有小尾巴</span>
+<span class="ios-switch"><input id="otherFirstTailOnly" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">我方仅第一条消息有小尾巴</span>
+<span class="ios-switch"><input id="myFirstTailOnly" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="slider-setting" style="margin-top:8px;">
+<label>修改对方气泡大小</label>
+<input id="otherBubblePadding" max="20" min="4" oninput="updateBubbleStyle()" type="range" value="8"/>
+<span id="otherBubblePaddingVal" style="font-size:10px;color:#999;">4-20</span>
+</div>
+<div class="slider-setting" style="margin-top:8px;">
+<label>修改我方气泡大小</label>
+<input id="myBubblePadding" max="20" min="4" oninput="updateBubbleStyle()" type="range" value="8"/>
+<span id="myBubblePaddingVal" style="font-size:10px;color:#999;">4-20</span>
+</div>
+</div>
+<div style="margin-top:12px;">
+<div style="display:flex;gap:8px;align-items:center;">
+<button class="edit-option" onclick="uploadCustomFont('chat')" style="flex:1;text-align:center;">上传气泡字体(.ttf)</button>
+<button class="edit-option" onclick="resetBubbleFont()" style="flex:1;text-align:center;">重置字体</button>
+</div>
+<div class="font-url-block">
+<div class="font-url-label">URL链接</div>
+<input type="text" id="bubbleFontUrlInput" class="font-url-input" placeholder="输入字体URL...">
+<button class="edit-option font-url-apply" onclick="applyFontUrlFromInput('chat')">应用</button>
+</div>
+</div>
+<div id="bubbleFontName" style="margin-top:4px;font-size:11px;color:#999;font-family:var(--font-family);"></div>
+<div id="customFontList_chat" style="margin:4px 0 8px;"></div>
+<input accept=".ttf,.otf" id="bubbleFontInput" onchange="handleBubbleFontUpload(event)" style="display:none;" type="file"/>
+<div style="font-size:11px;color:#999;margin-top:4px;">ttf文件上传可能会导致网站卡顿，谨慎使用！</div>
+</div><div class="settings-float-box"><div class="section-subtitle">气泡圆角进阶</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">开启修改双方气泡圆方程度</span>
+<span class="ios-switch"><input id="dualBubbleRadiusEnabled" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-grid-2" id="dualBubbleRadiusGrid" style="display:none;">
+<div class="slider-setting">
+<label>对方气泡圆方程度</label>
+<input id="otherBubbleRadius" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/>
+<span id="otherBubbleRadiusVal" style="font-size:10px;color:#999;">0-40（默认沿用上方）</span>
+</div>
+<div class="slider-setting">
+<label>我方气泡圆方程度</label>
+<input id="myBubbleRadius" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/>
+<span id="myBubbleRadiusVal" style="font-size:10px;color:#999;">0-40（默认沿用上方）</span>
+</div>
+</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">开启分别设置对方四角圆方程度</span>
+<span class="ios-switch"><input id="otherCornersEnabled" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-grid-2" id="otherCornersGrid" style="display:none;">
+<div class="slider-setting"><label>对方左上角圆方</label><input id="otherTL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>对方右上角圆方</label><input id="otherTR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>对方右下角圆方</label><input id="otherBR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>对方左下角圆方</label><input id="otherBL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">开启分别设置我方四角圆方程度</span>
+<span class="ios-switch"><input id="myCornersEnabled" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-grid-2" id="myCornersGrid" style="display:none;">
+<div class="slider-setting"><label>我方左上角圆方</label><input id="myTL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>我方右上角圆方</label><input id="myTR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>我方右下角圆方</label><input id="myBR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>我方左下角圆方</label><input id="myBL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+</div>
+</div><div class="settings-float-box"><div class="section-subtitle">昵称显示（仅头像在顶部/底部时生效）</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">显示双方昵称</span>
+<span class="ios-switch"><input id="showNicknames" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-grid-2">
+<div class="slider-setting"><label>对方昵称大小</label><input id="otherNicknameSize" max="24" min="8" oninput="updateBubbleStyle()" type="range" value="12"/></div>
+<div class="slider-setting"><label>我方昵称大小</label><input id="myNicknameSize" max="24" min="8" oninput="updateBubbleStyle()" type="range" value="12"/></div>
+<div class="color-setting"><label>对方昵称颜色</label><input id="otherNicknameColor" oninput="updateBubbleStyle()" type="color" value="#666666"/></div>
+<div class="color-setting"><label>我方昵称颜色</label><input id="myNicknameColor" oninput="updateBubbleStyle()" type="color" value="#666666"/></div>
+</div>
+</div><div class="settings-float-box"><div class="section-subtitle">已读与双对号</div>
+<div class="settings-grid-2">
+<div class="switch-setting ios-switch-row"><span class="ios-switch-label">显示已读</span><span class="ios-switch"><input id="showRead" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span></div>
+<div class="switch-setting ios-switch-row"><span class="ios-switch-label">显示双对号</span><span class="ios-switch"><input id="showDoubleCheck" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span></div>
+</div>
+<div class="settings-row"><label>已读/对号位置</label><select id="readPosition" onchange="updateBubbleStyle()"><option value="inside">气泡内部</option><option value="outside">气泡外部</option></select></div>
+<div class="settings-grid-2">
+<div class="switch-setting ios-switch-row"><span class="ios-switch-label">仅最后一条显示</span><span class="ios-switch"><input id="onlyLastRead" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span></div>
+<div class="switch-setting ios-switch-row"><span class="ios-switch-label">仅第一条显示</span><span class="ios-switch"><input id="onlyFirstRead" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span></div>
+<div class="color-setting"><label>已读颜色</label><input id="readColor" oninput="updateBubbleStyle()" type="color" value="#999999"/></div>
+</div>
+</div><div class="settings-float-box"><div class="section-subtitle">分条气泡圆角（第3条及以后沿用第3条）</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">开启分条气泡圆角</span>
+<span class="ios-switch"><input id="msgRadiusEnabled" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-grid-2" id="msgRadiusGrid" style="display:none;">
+<div class="slider-setting"><label>对方第1条圆方</label><input id="otherMsg1Radius" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>对方第2条圆方</label><input id="otherMsg2Radius" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>对方第3条圆方</label><input id="otherMsg3Radius" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>我方第1条圆方</label><input id="myMsg1Radius" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>我方第2条圆方</label><input id="myMsg2Radius" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>我方第3条圆方</label><input id="myMsg3Radius" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+</div>
+</div><div class="settings-float-box"><div class="section-subtitle">分条四角圆方（第3条及以后沿用第3条）</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">开启分条四角圆方</span>
+<span class="ios-switch"><input id="msgCornersEnabled" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div id="msgCornersGrid" style="display:none;">
+<div class="settings-float-box" style="margin:6px 0;padding:8px;">
+<div class="section-subtitle" style="margin-bottom:6px;">对方第1条四角圆方</div>
+<div class="settings-grid-2">
+<div class="slider-setting"><label>左上角</label><input id="otherMsg1TL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>右上角</label><input id="otherMsg1TR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>右下角</label><input id="otherMsg1BR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>左下角</label><input id="otherMsg1BL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+</div>
+</div>
+<div class="settings-float-box" style="margin:6px 0;padding:8px;">
+<div class="section-subtitle" style="margin-bottom:6px;">对方第2条四角圆方</div>
+<div class="settings-grid-2">
+<div class="slider-setting"><label>左上角</label><input id="otherMsg2TL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>右上角</label><input id="otherMsg2TR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>右下角</label><input id="otherMsg2BR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>左下角</label><input id="otherMsg2BL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+</div>
+</div>
+<div class="settings-float-box" style="margin:6px 0;padding:8px;">
+<div class="section-subtitle" style="margin-bottom:6px;">对方第3条四角圆方（第4条及以后沿用）</div>
+<div class="settings-grid-2">
+<div class="slider-setting"><label>左上角</label><input id="otherMsg3TL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>右上角</label><input id="otherMsg3TR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>右下角</label><input id="otherMsg3BR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>左下角</label><input id="otherMsg3BL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+</div>
+</div>
+<div class="settings-float-box" style="margin:6px 0;padding:8px;">
+<div class="section-subtitle" style="margin-bottom:6px;">我方第1条四角圆方</div>
+<div class="settings-grid-2">
+<div class="slider-setting"><label>左上角</label><input id="myMsg1TL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>右上角</label><input id="myMsg1TR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>右下角</label><input id="myMsg1BR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>左下角</label><input id="myMsg1BL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+</div>
+</div>
+<div class="settings-float-box" style="margin:6px 0;padding:8px;">
+<div class="section-subtitle" style="margin-bottom:6px;">我方第2条四角圆方</div>
+<div class="settings-grid-2">
+<div class="slider-setting"><label>左上角</label><input id="myMsg2TL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>右上角</label><input id="myMsg2TR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>右下角</label><input id="myMsg2BR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>左下角</label><input id="myMsg2BL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+</div>
+</div>
+<div class="settings-float-box" style="margin:6px 0;padding:8px;">
+<div class="section-subtitle" style="margin-bottom:6px;">我方第3条四角圆方（第4条及以后沿用）</div>
+<div class="settings-grid-2">
+<div class="slider-setting"><label>左上角</label><input id="myMsg3TL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>右上角</label><input id="myMsg3TR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>右下角</label><input id="myMsg3BR" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+<div class="slider-setting"><label>左下角</label><input id="myMsg3BL" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="8"/></div>
+</div>
+</div>
+</div>
+</div><div class="settings-float-box"><div class="section-subtitle">分条气泡颜色（第3条及以后沿用第3条）</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">开启分条气泡颜色</span>
+<span class="ios-switch"><input id="msgColorEnabled" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-grid-2" id="msgColorGrid" style="display:none;">
+<div class="color-setting"><label>对方第1条背景色</label><input id="otherMsg1Bg" oninput="updateBubbleStyle()" type="color" value="#4a4a4a"/></div>
+<div class="color-setting"><label>对方第2条背景色</label><input id="otherMsg2Bg" oninput="updateBubbleStyle()" type="color" value="#4a4a4a"/></div>
+<div class="color-setting"><label>对方第3条背景色</label><input id="otherMsg3Bg" oninput="updateBubbleStyle()" type="color" value="#4a4a4a"/></div>
+<div class="color-setting"><label>我方第1条背景色</label><input id="myMsg1Bg" oninput="updateBubbleStyle()" type="color" value="#1a1a1a"/></div>
+<div class="color-setting"><label>我方第2条背景色</label><input id="myMsg2Bg" oninput="updateBubbleStyle()" type="color" value="#1a1a1a"/></div>
+<div class="color-setting"><label>我方第3条背景色</label><input id="myMsg3Bg" oninput="updateBubbleStyle()" type="color" value="#1a1a1a"/></div>
+</div>
+</div><div class="settings-float-box"><div class="section-subtitle">分条气泡边框色（第3条及以后沿用第3条）</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">开启分条气泡边框色</span>
+<span class="ios-switch"><input id="msgBorderEnabled" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-grid-2" id="msgBorderGrid" style="display:none;">
+<div class="color-setting"><label>对方第1条边框色</label><input id="otherMsg1Border" oninput="updateBubbleStyle()" type="color" value="#4a4a4a"/></div>
+<div class="color-setting"><label>对方第2条边框色</label><input id="otherMsg2Border" oninput="updateBubbleStyle()" type="color" value="#4a4a4a"/></div>
+<div class="color-setting"><label>对方第3条边框色</label><input id="otherMsg3Border" oninput="updateBubbleStyle()" type="color" value="#4a4a4a"/></div>
+<div class="color-setting"><label>我方第1条边框色</label><input id="myMsg1Border" oninput="updateBubbleStyle()" type="color" value="#1a1a1a"/></div>
+<div class="color-setting"><label>我方第2条边框色</label><input id="myMsg2Border" oninput="updateBubbleStyle()" type="color" value="#1a1a1a"/></div>
+<div class="color-setting"><label>我方第3条边框色</label><input id="myMsg3Border" oninput="updateBubbleStyle()" type="color" value="#1a1a1a"/></div>
+</div>
+</div><div class="settings-float-box"><div class="section-subtitle">分条气泡大小（第3条及以后沿用第3条）</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">开启分条气泡大小</span>
+<span class="ios-switch"><input id="msgSizeEnabled" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-grid-2" id="msgSizeGrid" style="display:none;">
+<div class="slider-setting"><label>对方第1条大小</label><input id="otherMsg1Size" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="14"/></div>
+<div class="slider-setting"><label>对方第2条大小</label><input id="otherMsg2Size" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="14"/></div>
+<div class="slider-setting"><label>对方第3条大小</label><input id="otherMsg3Size" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="14"/></div>
+<div class="slider-setting"><label>我方第1条大小</label><input id="myMsg1Size" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="14"/></div>
+<div class="slider-setting"><label>我方第2条大小</label><input id="myMsg2Size" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="14"/></div>
+<div class="slider-setting"><label>我方第3条大小</label><input id="myMsg3Size" max="40" min="0" oninput="updateBubbleStyle()" type="range" value="14"/></div>
+</div>
+</div><div class="settings-float-box"><div class="section-subtitle">分条气泡字体大小（第3条及以后沿用第3条）</div>
+<div class="switch-setting ios-switch-row">
+<span class="ios-switch-label">开启分条气泡字体大小</span>
+<span class="ios-switch"><input id="msgFontEnabled" onchange="updateBubbleStyle()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-grid-2" id="msgFontGrid" style="display:none;">
+<div class="slider-setting"><label>对方第1条字号</label><input id="otherMsg1Font" max="40" min="8" oninput="updateBubbleStyle()" type="range" value="14"/></div>
+<div class="slider-setting"><label>对方第2条字号</label><input id="otherMsg2Font" max="40" min="8" oninput="updateBubbleStyle()" type="range" value="14"/></div>
+<div class="slider-setting"><label>对方第3条字号</label><input id="otherMsg3Font" max="40" min="8" oninput="updateBubbleStyle()" type="range" value="14"/></div>
+<div class="slider-setting"><label>我方第1条字号</label><input id="myMsg1Font" max="40" min="8" oninput="updateBubbleStyle()" type="range" value="14"/></div>
+<div class="slider-setting"><label>我方第2条字号</label><input id="myMsg2Font" max="40" min="8" oninput="updateBubbleStyle()" type="range" value="14"/></div>
+<div class="slider-setting"><label>我方第3条字号</label><input id="myMsg3Font" max="40" min="8" oninput="updateBubbleStyle()" type="range" value="14"/></div>
+</div>
+</div><div class="settings-float-box"><div class="section-subtitle">转账样式（独立于气泡形状）</div>
+<div class="settings-grid-2">
+<div class="color-setting"><label>转账背景色</label><input id="transferBgColor" oninput="updateBubbleStyle()" type="color" value="#E8913A"/></div>
+<div class="color-setting"><label>转账文字色</label><input id="transferTextColor" oninput="updateBubbleStyle()" type="color" value="#ffffff"/></div>
+<div class="color-setting"><label>转账备注色</label><input id="transferRemarkColor" oninput="updateBubbleStyle()" type="color" value="#ffffff"/></div>
+<div class="color-setting"><label>已领取背景色</label><input id="transferBgClaimed" oninput="updateBubbleStyle()" type="color" value="#999999"/></div>
+<div class="color-setting"><label>已领取文字色</label><input id="transferTextClaimed" oninput="updateBubbleStyle()" type="color" value="#ffffff"/></div>
+<div class="color-setting"><label>已领取备注色</label><input id="transferRemarkClaimed" oninput="updateBubbleStyle()" type="color" value="#ffffff"/></div>
+</div>
+<div class="settings-row" style="margin-top:8px;">
+<label>转账圆角</label>
+<input id="transferRadius" max="40" min="0" oninput="document.getElementById('transferRadiusVal').textContent=this.value;updateBubbleStyle()" style="flex:1;margin:0 8px;accent-color:var(--color-deep-gray);" type="range" value="8"/>
+<span id="transferRadiusVal">8</span>
+<button onclick="resetTransferStyle()" style="padding:4px 8px;background:#f0f0f0;border:1px solid #e0e0e0;border-radius:4px;font-size:12px;cursor:pointer;margin-left:8px;">重置</button>
+</div>
+</div></div>
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">显示设置</div>
+<div class="settings-row">
+<label>对方头像位置</label>
+<select id="otherAvatarPosition" onchange="updateDisplaySettings()">
+<option value="top">顶部</option>
+<option selected="" value="middle">中部</option>
+<option value="bottom">底部</option>
+</select>
+</div>
+<div class="settings-row">
+<label>我方头像位置</label>
+<select id="myAvatarPosition" onchange="updateDisplaySettings()">
+<option value="top">顶部</option>
+<option selected="" value="middle">中部</option>
+<option value="bottom">底部</option>
+</select>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">关闭头像显示</span>
+<span class="ios-switch"><input id="hideAvatar" onchange="updateDisplaySettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">隐藏我方头像</span>
+<span class="ios-switch"><input id="hideMyAvatar" onchange="updateDisplaySettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">隐藏对方头像</span>
+<span class="ios-switch"><input id="hideOtherAvatar" onchange="updateDisplaySettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">只显示第一条消息头像</span>
+<span class="ios-switch"><input id="onlyFirstAvatar" onchange="updateDisplaySettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">仅显示最后一条消息头像</span>
+<span class="ios-switch"><input id="onlyLastAvatar" onchange="updateDisplaySettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">只显示对方第一条消息头像</span>
+<span class="ios-switch"><input id="onlyOtherFirstAvatar" onchange="updateDisplaySettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">只显示我方第一条消息头像</span>
+<span class="ios-switch"><input id="onlyMyFirstAvatar" onchange="updateDisplaySettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">只显示对方最后一条消息头像</span>
+<span class="ios-switch"><input id="onlyOtherLastAvatar" onchange="updateDisplaySettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">只显示我方最后一条消息头像</span>
+<span class="ios-switch"><input id="onlyMyLastAvatar" onchange="updateDisplaySettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">聊天界面暗黑模式</span>
+<span class="ios-switch"><input id="chatDarkMode" onchange="toggleChatDarkMode()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row"><label>输入框圆方程度</label><div style="display:flex;align-items:center;gap:6px;flex:1;"><input id="inputBorderRadius" max="20" min="0" oninput="updateInputBorderRadius(this.value)" step="1" style="flex:1;" type="range" value="0"/><span id="inputBorderRadiusVal" style="font-size:11px;color:#999;min-width:28px;">0px</span></div></div>
+<div class="settings-row"><label>输入框颜色</label><input id="inputBgColor" oninput="updateInputBgColor(this.value)" type="color" value="#ffffff"/><button onclick="resetInputBgColor()" style="padding:4px 8px;background:#f5f5f5;border:none;border-radius:4px;font-size:12px;cursor:pointer;">重置</button></div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">关闭底部背景</span>
+<span class="ios-switch"><input id="hideFooterBg" onchange="toggleFooterBg()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row"><label>顶部备注颜色</label><input id="headerTitleColor" oninput="updateHeaderTitleColor(this.value)" type="color" value="#1a1a1a"/><button onclick="resetHeaderTitleColor()" style="padding:4px 8px;background:#f5f5f5;border:none;border-radius:4px;font-size:12px;cursor:pointer;">重置</button></div>
+</div></div>
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">美化设置</div>
+<div class="settings-row">
+<label>聊天壁纸</label>
+<div class="btn-group">
+<button onclick="changeChatWallpaper()">上传</button>
+<button onclick="resetChatWallpaper()">重置</button>
+</div>
+</div>
+<div class="settings-row"><label>顶部背景色</label><input id="topBgColor" oninput="updateTopBgColor()" type="color" value="#f0f0f0"/><button onclick="resetTopBgColor()" style="padding:4px 8px;background:#f5f5f5;border:none;border-radius:4px;font-size:12px;cursor:pointer;">重置</button></div>
+<div class="settings-row"><label>修改顶部背景图</label><div class="btn-group"><button onclick="uploadTopBgImage()">上传</button><button onclick="resetTopBgImage()">恢复默认</button></div></div>
+<div class="settings-row"><label>底部背景色</label><input id="bottomBgColor" oninput="updateBottomBgColor()" type="color" value="#f0f0f0"/><button onclick="resetBottomBgColor()" style="padding:4px 8px;background:#f5f5f5;border:none;border-radius:4px;font-size:12px;cursor:pointer;">重置</button></div>
+<div class="settings-row"><label>修改底部背景图</label><div class="btn-group"><button onclick="uploadBottomBgImage()">上传</button><button onclick="resetBottomBgImage()">恢复默认</button></div></div>
+<div class="settings-row"><label>顶部背景内边距</label><div style="display:flex;align-items:center;gap:6px;flex:1;"><input id="topBgPadding" max="50" min="0" oninput="updateTopBgPadding(this.value)" step="1" style="flex:1;" type="range" value="0"/><span id="topBgPaddingVal" style="font-size:11px;color:#999;min-width:28px;">0vh</span></div></div>
+<div class="settings-row"><label>调节顶部背景圆方程度</label><div style="display:flex;align-items:center;gap:6px;flex:1;"><input id="topBgRadius" max="50" min="0" oninput="updateTopBgRadius(this.value)" step="1" style="flex:1;" type="range" value="0"/><span id="topBgRadiusVal" style="font-size:11px;color:#999;min-width:28px;">0px</span></div></div>
+<div class="settings-row"><label>调节底部背景圆方程度</label><div style="display:flex;align-items:center;gap:6px;flex:1;"><input id="bottomBgRadius" max="50" min="0" oninput="updateBottomBgRadius(this.value)" step="1" style="flex:1;" type="range" value="0"/><span id="bottomBgRadiusVal" style="font-size:11px;color:#999;min-width:28px;">0px</span></div></div>
+</div><div class="settings-float-box"><div class="section-subtitle">自定义图标</div>
+<div class="icon-grid-3">
+<div class="icon-item" data-icon="plus" onclick="customizeIcon('plus')">
+<svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="16"></line><line x1="8" x2="16" y1="12" y2="12"></line></svg>
+<span>+号</span>
+</div>
+<div class="icon-item" data-icon="receive" onclick="customizeIcon('receive')">
+<svg viewbox="0 0 24 24"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+<span>接收</span>
+</div>
+<div class="icon-item" data-icon="back" onclick="customizeIcon('back')">
+<svg viewbox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+<span>返回</span>
+</div>
+<div class="icon-item" data-icon="menu" onclick="customizeIcon('menu')">
+<svg viewbox="0 0 24 24"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+<span>菜单</span>
+</div>
+<div class="icon-item" data-icon="video" onclick="customizeIcon('video')">
+<svg viewbox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect height="14" rx="2" width="15" x="1" y="5"></rect></svg>
+<span>视频</span>
+</div>
+<div class="icon-item" data-icon="image" onclick="customizeIcon('image')">
+<svg viewbox="0 0 24 24"><rect height="18" rx="2" width="18" x="3" y="3"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>
+<span>图片</span>
+</div>
+<div class="icon-item" data-icon="emoji" onclick="customizeIcon('emoji')">
+<svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" x2="9.01" y1="9" y2="9"></line><line x1="15" x2="15.01" y1="9" y2="9"></line></svg>
+<span>表情</span>
+</div>
+<div class="icon-item" data-icon="nudge" onclick="customizeIcon('nudge')">
+<svg viewbox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7 3 9 3 14h6c0-5 3-7 3-14z"></path><line x1="12" x2="12" y1="2" y2="3"></line></svg>
+<span>拍一拍</span>
+</div>
+<div class="icon-item" data-icon="blindCard" onclick="customizeIcon('blindCard')">
+<svg viewbox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" ry="3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></rect><path d="M12 9l2 2-2 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="8" cy="12" r="1" fill="currentColor"></circle><circle cx="16" cy="12" r="1" fill="currentColor"></circle></svg>
+<span>盲选抽牌</span>
+</div>
+<div class="icon-item" data-icon="transfer" onclick="customizeIcon('transfer')">
+<svg viewbox="0 0 24 24"><rect height="14" rx="2" width="20" x="2" y="5"></rect><line x1="12" x2="12" y1="10" y2="14"></line><path d="M8 12h8"></path></svg>
+<span>转账</span>
+</div>
+<div class="icon-item" data-icon="randomFood" onclick="customizeIcon('randomFood')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16a8 8 0 0 1-16 0z"/><path d="M2 11h20"/><path d="M12 7V4"/><path d="M8 5h8"/></svg>
+<span>今日抽抽抽</span>
+</div>
+</div>
+<div class="settings-row" style="margin-top:12px;">
+<label>重置所有图标</label>
+<button onclick="resetAllCustomIcons()" style="padding:4px 12px;background:#f0f0f0;border:1px solid #e0e0e0;border-radius:4px;font-size:12px;cursor:pointer;">重置</button>
+</div>
+<div class="settings-row">
+<label>图标颜色</label>
+<input id="customIconColor" oninput="updateCustomIconColor(this.value)" type="color" value="#999999"/>
+<button onclick="resetCustomIconColor()" style="padding:4px 8px;background:#f5f5f5;border:none;border-radius:4px;font-size:12px;cursor:pointer;">重置</button>
+</div>
+</div></div>
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">回复设置</div>
+<div class="settings-row">
+<label>回复时间(秒)</label>
+<input id="replyTimeMin" max="120" min="1" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="5"/>
+<input id="replyTimeMax" max="120" min="1" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="10"/>
+</div>
+<div class="settings-row">
+<label>回复条数</label>
+<input id="replyCountMin" max="20" min="1" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="1"/>
+<input id="replyCountMax" max="20" min="1" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="3"/>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">开启拼接字卡</span>
+<span class="ios-switch"><input id="enableSplice" onchange="updateReplySettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row">
+<label>拍一拍概率(%)</label>
+<input id="nudgeProb" max="100" min="0" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="10"/>
+</div>
+<div class="settings-row">
+<label>表情包概率(%)</label>
+<input id="emojiProb" max="100" min="0" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="10"/>
+</div>
+<div class="settings-row">
+<label>电话接听概率(%)</label>
+<input id="callAnswerProb" max="100" min="0" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="80"/>
+</div>
+<div class="settings-row">
+<label>对方主动拨打概率(%)</label>
+<input id="callInitProb" max="100" min="0" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="5"/>
+</div>
+<div class="settings-row">
+<label>对方主动转账概率(%)</label>
+<input id="transferProb" max="100" min="0" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="5"/>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">允许零余额转账（余额为零时仍可转账并附带留言）</span>
+<span class="ios-switch"><input id="allowZeroTransfer" onchange="updateReplySettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row">
+<label>每日朋友圈条数</label>
+<input id="momentCount" max="20" min="0" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="3"/>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">朋友圈拼接字卡</span>
+<span class="ios-switch"><input id="momentSplice" onchange="updateReplySettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row">
+<label>朋友圈主动评论概率(%)</label>
+<input id="momentCommentProb" max="100" min="0" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="80"/>
+</div>
+<div class="settings-row">
+<label>朋友圈点赞概率(%)</label>
+<input id="momentLikeProb" max="100" min="0" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="80"/>
+</div>
+<div class="settings-row">
+<label>朋友圈回复评论时间(min)</label>
+<input id="momentReplyDelayMin" min="1" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="10"/> 分钟
+</div>
+<div class="settings-row">
+<label>日记回复(分钟)</label>
+<input id="diaryReplyTime" max="1440" min="1" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="30"/> 分钟
+                </div>
+<div class="settings-row">
+<label>信封回复(小时)</label>
+<input id="letterReplyMin" max="720" min="1" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="2"/> 小时
+                    <input id="letterReplyMax" max="720" min="1" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="48"/> 小时
+                </div>
+<div class="settings-row">
+<label>每日主动写信</label>
+<input id="letterCountMin" max="20" min="0" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="1"/>
+<input id="letterCountMax" max="20" min="0" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="3"/>
+</div>
+<div class="settings-row">
+<label>对方收藏信件概率(%)</label>
+<input id="letterFavProb" max="100" min="0" onchange="updateReplySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="30"/>
+</div>
+<div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
+<div style="display:flex;align-items:center;gap:8px;width:100%;">
+<span class="ios-switch-label">对方主动发消息</span>
+<span class="ios-switch"><input id="proactiveEnable" onchange="updateReplySettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div style="display:flex;align-items:center;gap:4px;width:100%;font-size:12px;color:#999;">
+<span>最低</span>
+<input id="proactiveMinSec" max="3600" min="1" onchange="updateReplySettings()" style="width:50px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 4px;font-size:13px;outline:none;" type="number" value="30"/> 秒
+                        <span style="margin-left:8px;">最高</span>
+<input id="proactiveMaxMin" max="1440" min="1" onchange="updateReplySettings()" style="width:50px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 4px;font-size:13px;outline:none;" type="number" value="5"/> 分钟
+                    </div>
+</div>
+<div class="settings-row">
+<label>已读不回(%)</label>
+<input id="readNoReplyProb" max="100" min="0" oninput="document.getElementById('readNoReplyProbVal').textContent=this.value;updateReplySettings()" type="range" value="0"/>
+<span id="readNoReplyProbVal">0</span><span style="font-size:10px;color:#999;margin-left:4px;">0-100</span>
+</div>
+<div class="chat-dnd-block-section" id="chatDndBlockSection" style="display:none;">
+<div class="section-title" style="font-size:14px;font-weight:600;margin-bottom:8px;">联系人管理</div>
+<div class="dnd-block-row" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;">
+<label>免打扰</label>
+<span class="ios-switch"><input id="contactDndToggle" onchange="toggleContactDND(_activeContactId)" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="dnd-block-row" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;">
+<label>拉黑对方</label>
+<span class="ios-switch"><input id="contactBlockToggle" onchange="onBlockToggle(_activeContactId)" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+</div>
+<div class="settings-row danger" onclick="clearChatHistory()">
+<span>清空聊天记录</span>
+</div>
+</div></div>
+</div>
+</div>
+<!-- 字卡主界面 -->
+<div class="wordcard-page" id="wordcardPage">
+<div class="wordcard-header">
+<div class="wordcard-title">字卡</div>
+<div class="wordcard-contact-btn" id="wordcardContactBtn" onclick="toggleContactScopeBar()">共用字卡</div>
+</div>
+<div class="wordcard-contact-bar" id="wordcardContactBar"></div>
+<div class="wordcard-tabs" id="wordcardTabs">
+<div class="wordcard-tab active" data-group="default" onclick="switchWordGroup('default')">未分组</div>
+<div class="wordcard-tab add-tab" onclick="addGroup()">+ 添加分组</div>
+</div>
+<div class="wordcard-actions">
+<div style="width:100%;margin-bottom:8px;">
+<input id="wordcardSearchInput" oninput="renderWordCardList()" placeholder="搜索字卡..." style="width:100%;padding:8px 10px;border:none;border-radius:4px;font-size:13px;outline:none;font-family:var(--font-family);box-sizing:border-box;background:#f5f5f5;" type="text"/>
+</div>
+<div class="action-btn" onclick="batchUploadWord()">批量上传</div>
+<div class="action-btn" onclick="uploadWordFile()">上传文件</div>
+<div class="action-btn" onclick="deleteSelectedCards()">删除选中</div>
+<div class="action-btn" onclick="hideSelectedCards()">隐藏选中</div>
+<div class="action-btn" onclick="clearAllCards()">清空分组</div>
+<div class="action-btn" onclick="dedupWordCards()">去重</div>
+</div>
+<div class="wordcard-list" id="wordcardList"></div>
+<div class="special-section">
+<div class="section-title">特殊字卡</div>
+<div class="special-item">
+<div class="special-header">
+<span>拍一拍字卡</span>
+<div class="special-actions">
+<button onclick="batchUploadNudge()">批量上传</button>
+<button onclick="uploadNudgeFile()">文件上传</button>
+<button onclick="dedupSpecialCards('nudge')">去重</button>
+</div>
+</div>
+<div class="special-card-list" id="nudgeCardList"></div>
+</div>
+<div class="special-item">
+<div class="special-header">
+<span>emoji字卡</span>
+<div class="special-actions">
+<button onclick="batchUploadEmoji()">批量上传</button>
+<button onclick="uploadEmojiFile()">文件上传</button>
+<button onclick="dedupSpecialCards('emoji')">去重</button>
+</div>
+</div><div class="settings-float-box"><div class="settings-row ios-switch-row">
+<span class="ios-switch-label">开启发送emoji</span>
+<span class="ios-switch"><input id="enableEmoji" onchange="saveSpecialSettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div><div class="settings-row">
+<label>发送概率(%)</label>
+<input id="emojiSendProb" max="100" min="0" oninput="saveSpecialSettings()" type="range" value="10"/>
+<span id="emojiSendProbVal">10</span><span style="font-size:10px;color:#999;margin-left:4px;">0-100</span>
+</div><div class="settings-row ios-switch-row">
+<span class="ios-switch-label">文字拼接emoji</span>
+<span class="ios-switch"><input id="emojiSplice" onchange="saveSpecialSettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div></div>
+
+
+
+<div class="special-card-list" id="emojiCardList"></div>
+</div>
+<div class="special-item">
+<div class="special-header">
+<span>颜文字字卡</span>
+<div class="special-actions">
+<button onclick="batchUploadKaomoji()">批量上传</button>
+<button onclick="uploadKaomojiFile()">文件上传</button>
+<button onclick="dedupSpecialCards('kaomoji')">去重</button>
+</div>
+</div><div class="settings-float-box"><div class="settings-row ios-switch-row">
+<span class="ios-switch-label">开启发送颜文字</span>
+<span class="ios-switch"><input id="enableKaomoji" onchange="saveSpecialSettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div><div class="settings-row">
+<label>发送概率(%)</label>
+<input id="kaomojiProb" max="100" min="0" oninput="saveSpecialSettings()" type="range" value="10"/>
+<span id="kaomojiProbVal">10</span><span style="font-size:10px;color:#999;margin-left:4px;">0-100</span>
+</div><div class="settings-row ios-switch-row">
+<span class="ios-switch-label">文字拼接颜文字</span>
+<span class="ios-switch"><input id="kaomojiSplice" onchange="saveSpecialSettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div></div>
+
+
+
+<div class="special-card-list" id="kaomojiCardList"></div>
+</div>
+<div class="special-item">
+<div class="special-header">
+<span>图片字卡（仅朋友圈）</span>
+<div class="special-actions">
+<button onclick="uploadImageCards()">批量上传</button>
+<button onclick="dedupSpecialCards('image')">去重</button>
+</div>
+</div>
+<div class="image-card-grid" id="imageCardGrid"></div>
+</div>
+<div class="special-item">
+<div class="special-header">
+<span>次元购物城字卡</span>
+<div class="special-actions">
+<button onclick="batchUploadShopping()">批量上传</button>
+<button onclick="dedupSpecialCards('shopping')">去重</button>
+</div>
+</div>
+<div class="special-card-list" id="shoppingCardList"></div>
+</div>
+</div>
+</div>
+<!-- 朋友圈界面 -->
+<div class="moments-page" id="momentsPage">
+<div class="moments-header" id="momentsHeader" onclick="changeMomentsWallpaper()">
+<div class="page-back" onclick="event.stopPropagation();closeMoments()">‹</div>
+<div class="page-send" onclick="event.stopPropagation();openPublishMoment()" style="background:transparent!important;-webkit-tap-highlight-color:transparent;outline:none;">发送</div>
+<div class="moments-user-info">
+<div class="nickname" id="momentMyNick">我</div>
+<div class="moments-avatar" id="momentMyAvatar"></div>
+</div>
+</div>
+<div class="moments-list" id="momentsList"></div>
+</div>
+<!-- 日记界面 -->
+<div class="diary-page" id="diaryPage">
+<div class="diary-page-header">
+<div class="diary-page-back" onclick="closeDiary()">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a90d9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+</div>
+<div class="diary-page-menu" onclick="event.stopPropagation();event.preventDefault();safeOpenDiarySettings();">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4a90d9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
+</div>
+</div>
+<div class="diary-tabs">
+<div class="diary-tab active" data-tab="single" onclick="switchDiaryTab('single')">单人日记</div>
+<div class="diary-tab" data-tab="double" onclick="switchDiaryTab('double')">双人日记</div>
+</div>
+<div class="diary-list" id="diaryList"></div>
+<div style="position: fixed; bottom: 30px; right: 20px; z-index: 310;">
+<div class="diary-fab" id="diaryFab" onclick="handleDiaryFabClick()">+</div>
+</div>
+</div>
+<!-- 信封界面 -->
+<div class="letter-page" id="letterPage">
+<div class="letter-page-header">
+<div class="letter-page-back" onclick="closeLetter()">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2a7ab5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+</div>
+<div class="letter-page-menu" onclick="event.stopPropagation();event.preventDefault();safeOpenLetterSettings();">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2a7ab5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
+</div>
+</div>
+<div class="letter-tabs">
+<div class="letter-tab active" data-tab="inbox" onclick="switchLetterTab('inbox')">来信</div>
+<div class="letter-tab" data-tab="reply" onclick="switchLetterTab('reply')">回信</div>
+<div class="letter-tab" data-tab="sent" onclick="switchLetterTab('sent')">寄信</div>
+<div class="letter-tab" data-tab="favorite" onclick="switchLetterTab('favorite')">收藏</div>
+</div>
+<div class="letter-list" id="letterList"></div>
+<div style="position: fixed; bottom: 30px; right: 20px; z-index: 10;">
+<div onclick="openSendLetter()" style="width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #2a7ab5, #85DBF9); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 16px rgba(133,219,249,0.45); transition: all 0.3s;"><svg fill="none" height="24" stroke="white" stroke-width="1.5" viewbox="0 0 24 24" width="24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></div>
+</div>
+</div>
+<!-- 视频通话界面 -->
+<div class="video-call-page" id="videoCallPage">
+<div class="video-container" id="videoContainer">
+<img alt="" class="video-bg" id="videoBg"/>
+<div class="video-bg-menu" id="videoBgMenu" onclick="changeVideoBg()">更换背景</div>
+<div class="video-avatar" id="videoAvatar"></div>
+<div class="video-name" id="videoName">对方</div>
+<div class="video-status" id="videoStatus">连接中...</div>
+<div class="video-controls">
+<div class="video-btn" onclick="endCall()">
+<svg viewbox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+</div>
+<div class="video-btn answer" id="answerBtn" onclick="answerCall()" style="display:none;">
+<svg viewbox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+</div>
+</div>
+<div class="video-minimize" onclick="event.stopPropagation(); toggleMinimizeVideo()">−</div>
+</div>
+</div>
+</div>
+<!-- 全局设置页面 -->
+<div class="settings-page" id="globalSettingsPage" style="z-index:350;">
+<div class="settings-header">
+<div class="settings-back" onclick="closeGlobalSettings()">‹</div>
+<div class="settings-title">设置</div>
+</div>
+<div class="settings-content">
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">桌面壁纸</div>
+<div id="globalWallpaperPreview" style="width:100%;height:120px;background:#f0f0f0;border-radius:8px;overflow:hidden;margin-bottom:12px;display:none;"></div>
+<div class="settings-row">
+<label>聊天壁纸</label>
+<div class="btn-group">
+<button onclick="uploadGlobalWallpaper()">上传</button>
+<button onclick="resetGlobalWallpaper()">重置</button>
+</div>
+</div>
+</div></div>
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">外观</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">暗黑模式</span>
+<span class="ios-switch"><input id="darkModeToggle" onchange="toggleDarkMode()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row">
+<label>上传字体</label>
+<div class="btn-group">
+<button onclick="uploadCustomFont('global')">上传TTF</button>
+</div>
+</div>
+<div style="font-size:11px;color:#999;margin-top:4px;">ttf文件上传可能会导致网站卡顿，谨慎使用！</div>
+<div class="font-url-block">
+<div class="font-url-label">URL链接</div>
+<input type="text" id="globalFontUrlInput" class="font-url-input" placeholder="输入字体URL...">
+<button class="font-url-apply" onclick="applyFontUrlFromInput('global')">应用</button>
+</div>
+<div id="customFontList_global" style="margin:4px 0 8px;"></div>
+<div id="globalFontPreview" style="font-size:12px;color:#999999;margin-left:12px;">跟随系统</div>
+<div class="settings-row">
+<label>全局字体颜色</label>
+<input id="globalFontColor" oninput="updateGlobalFontColor(this.value)" type="color" value="#1a1a1a"/>
+</div>
+<div class="settings-row">
+<label>图标颜色</label>
+<input id="globalIconColor" oninput="updateGlobalIconColor(this.value)" type="color" value="#999999"/>
+</div>
+<div class="settings-row">
+<label>全局字体大小</label>
+<input id="globalFontSizeSlider" max="20" min="12" oninput="document.getElementById('globalFontSizeVal').textContent=this.value;updateGlobalFontSize(this.value)" style="flex:1;margin:0 8px;accent-color:var(--color-deep-gray);" type="range" value="14"/>
+<span id="globalFontSizeVal">14</span>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">关闭毛玻璃效果</span>
+<span class="ios-switch"><input id="disableGlassToggle" onchange="toggleGlassEffect()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row">
+<label>图标背景颜色</label>
+<input id="iconBgColor" oninput="updateIconBgColor(this.value)" type="color" value="#ffffff"/>
+</div>
+<div class="settings-row">
+<label>纪念日组件背景颜色</label>
+<input id="anniversaryBgColor" oninput="updateAnniversaryBgColor(this.value)" type="color" value="#ffffff"/>
+</div>
+<div class="settings-row">
+<label>底部DOCK栏背景颜色</label>
+<input id="dockBgColor" oninput="updateDockBgColor(this.value)" type="color" value="#ffffff"/>
+</div>
+<div class="settings-row">
+<label>日历组件背景颜色</label>
+<input id="periodBgColor" oninput="updatePeriodBgColor(this.value)" type="color" value="#ffffff"/>
+</div>
+<div class="settings-row">
+<label>双方时间组件背景颜色</label>
+<input id="timeBgColor" oninput="updateTimeBgColor(this.value)" type="color" value="#ffffff"/>
+</div>
+<div class="settings-row">
+<label>输入框颜色（第三页）</label>
+<input id="p3InputBgPicker" oninput="setP3InputBg(this.value)" type="color" value="#ffffff"/>
+</div>
+<div class="settings-row">
+<label>输入框字体颜色（第三页）</label>
+<input id="p3InputColorPicker" oninput="setP3InputColor(this.value)" type="color" value="#1a1a1a"/>
+</div>
+
+</div></div>
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">消息通知</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">开启站内消息通知</span>
+<span class="ios-switch"><input id="notificationToggle" onchange="toggleNotification()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div style="font-size:12px;color:#999;margin:4px 0 8px;font-family:var(--font-family);">开启后，当你离开聊天界面时，对方发消息会有弹窗提醒。同时会请求浏览器通知权限，离开网站后也能收到系统通知</div>
+<div id="notifTestArea" style="display:none;margin-top:8px;">
+<div onclick="testNotification()" style="display:inline-block;padding:6px 16px;border-radius:10px;background:#e0e0e0;color:#fff;font-size:13px;cursor:pointer;font-family:var(--font-family);transition:opacity 0.2s;" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">测试消息通知</div>
+<div id="notifPermissionStatus" style="font-size:11px;color:#999;margin-top:6px;font-family:var(--font-family);"></div>
+</div>
+</div></div>
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">后台保活</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">开启后台保活</span>
+<span class="ios-switch"><input id="keepAliveToggle" onclick="toggleKeepAlive()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div style="font-size:12px;color:#999;margin:4px 0 8px;font-family:var(--font-family);">开启后，切到后台时通过播放静音音频+屏幕唤醒锁保持运行，回来后自动补发离开期间对方的消息。建议先"添加到主屏幕"获得最佳效果</div>
+</div></div>
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">锁屏设置</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">是否开启锁屏</span>
+<span class="ios-switch"><input id="lockScreenToggle" onchange="toggleLockScreen()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">是否开启锁屏密码</span>
+<span class="ios-switch"><input id="lockScreenPasswordToggle" onchange="toggleLockScreenPassword()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row">
+<label>修改锁屏密码</label>
+<div class="btn-group">
+<button onclick="changeLockScreenPassword()" style="padding:6px 12px;background:#1a1a1a;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">修改密码</button>
+</div>
+</div>
+<div id="lockScreenPasswordChangeArea" style="display:none;margin-top:8px;">
+<input type="password" id="lockScreenOldPwd" placeholder="旧密码" maxlength="20" style="width:100%;padding:8px;border:none;border-radius:6px;margin-bottom:6px;font-size:13px;outline:none;background:#f5f5f5;"/>
+<input type="password" id="lockScreenNewPwd" placeholder="新密码" maxlength="20" style="width:100%;padding:8px;border:none;border-radius:6px;margin-bottom:6px;font-size:13px;outline:none;background:#f5f5f5;"/>
+<input type="password" id="lockScreenConfirmPwd" placeholder="确认新密码" maxlength="20" style="width:100%;padding:8px;border:none;border-radius:6px;margin-bottom:6px;font-size:13px;outline:none;background:#f5f5f5;"/>
+<div style="display:flex;gap:8px;">
+<button onclick="confirmChangeLockPassword()" style="flex:1;padding:8px;background:#1a1a1a;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;">确认</button>
+<button onclick="cancelChangeLockPassword()" style="flex:1;padding:8px;background:#f5f5f5;border:none;border-radius:6px;font-size:13px;cursor:pointer;">取消</button>
+</div>
+<div id="lockPwdChangeMsg" style="font-size:12px;margin-top:6px;text-align:center;"></div>
+</div>
+<div class="settings-row">
+<label>锁屏壁纸</label>
+<div class="btn-group">
+<button onclick="uploadLockWallpaper()">上传</button>
+<button onclick="resetLockWallpaper()">恢复默认</button>
+</div>
+</div>
+<div class="settings-row">
+<label>锁屏文字颜色</label>
+<div class="btn-group">
+<input id="lockTextColorPicker" oninput="updateLockTextColor(this.value)" type="color" value="#ffffff" style="width:40px;height:30px;border:none;border-radius:6px;cursor:pointer;"/>
+<button onclick="resetLockTextColor()">恢复默认</button>
+</div>
+</div>
+</div></div>
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">联系人列表设置</div>
+<div class="settings-row">
+<label>列表界面背景</label>
+<div class="btn-group">
+<input id="contactListBgColor" oninput="updateContactListBg(this.value)" type="color" value="#ededed" style="width:40px;height:30px;border:none;border-radius:6px;cursor:pointer;"/>
+<button onclick="resetContactListBg()" style="padding:4px 8px;background:#f5f5f5;border:none;border-radius:4px;font-size:12px;cursor:pointer;">恢复默认</button>
+</div>
+</div>
+<div class="settings-row">
+<label>修改列表界面背景图</label>
+<div class="btn-group">
+<button onclick="uploadContactListBgImage()">上传</button>
+<button onclick="resetContactListBgImage()">恢复默认</button>
+</div>
+</div>
+<div class="settings-row">
+<label>列表界面字体颜色</label>
+<div class="btn-group">
+<input id="contactListFontColor" oninput="updateContactListFontColor(this.value)" type="color" value="#1a1a1a" style="width:40px;height:30px;border:none;border-radius:6px;cursor:pointer;"/>
+<button onclick="resetContactListFontColor()" style="padding:4px 8px;background:#f5f5f5;border:none;border-radius:4px;font-size:12px;cursor:pointer;">恢复默认</button>
+</div>
+</div>
+</div></div>
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">底栏与按钮自定义</div>
+<div class="settings-row">
+<label>修改加号按钮图片</label>
+<div class="btn-group">
+<button onclick="uploadAddBtnImage()">上传</button>
+<button onclick="resetAddBtnImage()">恢复默认</button>
+</div>
+</div>
+<div class="settings-row">
+<label>调节加号按钮颜色</label>
+<div class="btn-group">
+<input id="addBtnColorPicker" oninput="updateAddBtnColor(this.value)" type="color" value="#1a1a1a" style="width:40px;height:30px;border:none;border-radius:6px;cursor:pointer;"/>
+<button onclick="resetAddBtnColor()" style="padding:4px 8px;background:#f5f5f5;border:none;border-radius:4px;font-size:12px;cursor:pointer;">恢复默认</button>
+</div>
+</div>
+<div class="settings-row">
+<label>修改搜索按钮图片</label>
+<div class="btn-group">
+<button onclick="uploadSearchBtnImage()">上传</button>
+<button onclick="resetSearchBtnImage()">恢复默认</button>
+</div>
+</div>
+<div class="settings-row">
+<label>调节搜索按钮颜色</label>
+<div class="btn-group">
+<input id="searchBtnColorPicker" oninput="updateSearchBtnColor(this.value)" type="color" value="#1a1a1a" style="width:40px;height:30px;border:none;border-radius:6px;cursor:pointer;"/>
+<button onclick="resetSearchBtnColor()" style="padding:4px 8px;background:#f5f5f5;border:none;border-radius:4px;font-size:12px;cursor:pointer;">恢复默认</button>
+</div>
+</div>
+<div class="settings-row">
+<label>修改底栏背景图片</label>
+<div class="btn-group">
+<button onclick="uploadBottomBarBgImage()">上传</button>
+<button onclick="resetBottomBarBgImage()">恢复默认</button>
+</div>
+</div>
+<div class="settings-row">
+<label>调节底栏背景颜色</label>
+<div class="btn-group">
+<input id="bottomBarBgColorPicker" oninput="updateBottomBarBgColor(this.value)" type="color" value="#ffffff" style="width:40px;height:30px;border:none;border-radius:6px;cursor:pointer;"/>
+<button onclick="resetBottomBarBgColor()" style="padding:4px 8px;background:#f5f5f5;border:none;border-radius:4px;font-size:12px;cursor:pointer;">恢复默认</button>
+</div>
+</div>
+</div></div>
+
+<div class="settings-section" style="margin-top:16px;">
+<div class="section-title">对方最爱发送的字卡</div>
+<div id="wordCloudStats"></div>
+</div>
+<div class="settings-section" style="margin-top:16px;">
+<div class="section-title">字卡发送频率排行</div>
+<div id="wordFreqRank"></div>
+</div>
+<div class="settings-section" style="margin-top:16px;">
+<div class="section-title">消息条数统计</div>
+<div style="font-size:12px;color:#999;margin-bottom:10px;">统计双方各自发送的消息数量</div>
+<div id="messageCountStats"></div>
+</div>
+</div>
+</div>
+<!-- 美化APP页面 -->
+<div class="settings-page" id="beautifyPage" style="z-index:350;">
+<div class="settings-header">
+<div class="settings-back" onclick="closeBeautifyApp()">‹</div>
+<div class="settings-title">美化</div>
+</div>
+<div style="display:flex;border-bottom:1px solid #e0e0e0;background:#f0f0f0;">
+<div class="beautify-main-tab active" data-tab="chat" onclick="switchBeautifyTab('chat')" style="flex:1;text-align:center;padding:10px 0;font-size:14px;cursor:pointer;border-bottom:2px solid #1a1a1a;color:#1a1a1a;">聊天全局</div>
+<div class="beautify-main-tab" data-tab="bubble" onclick="switchBeautifyTab('bubble')" style="flex:1;text-align:center;padding:10px 0;font-size:14px;cursor:pointer;border-bottom:2px solid transparent;color:#666;">气泡美化</div>
+<div class="beautify-main-tab" data-tab="moments" onclick="switchBeautifyTab('moments')" style="flex:1;text-align:center;padding:10px 0;font-size:14px;cursor:pointer;border-bottom:2px solid transparent;color:#666;">朋友圈</div>
+</div>
+<div class="settings-content">
+<div id="beautifyChat">
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">聊天全局美化</div>
+<div style="font-size:12px;color:#999999;margin-bottom:8px;">输入CSS自定义聊天界面样式（不包括聊天菜单）。选择器备注：.chat-header(顶部) .chat-messages(消息区) .msg-row(消息行) .msg-bubble(气泡) .msg-row.mine(我的消息) .msg-row.other(对方消息) .chat-footer(底部)</div>
+<textarea id="beautifyChatCss" oninput="applyBeautifyLiveCss('chatGlobal')" placeholder="/* 输入CSS */" style="width:100%;height:120px;border:1px solid #e0e0e0;border-radius:8px;padding:8px;font-size:13px;font-family:monospace;resize:none;outline:none;"></textarea>
+<div style="display:flex;gap:8px;margin-top:8px;">
+<button onclick="saveBeautifyPreset('chatGlobal')" style="padding:6px 12px;background:#1a1a1a;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">保存预设</button>
+</div>
+<div style="margin-top:12px;">
+<div style="font-size:13px;color:#666;margin-bottom:6px;">已保存的预设：</div>
+<div id="beautifyChatPresetList"></div>
+</div>
+</div></div>
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">背景设置</div>
+<div class="settings-row">
+<label>聊天背景图</label>
+<div class="btn-group">
+<button onclick="changeChatWallpaper()">上传</button>
+<button onclick="resetChatWallpaper()">恢复默认</button>
+</div>
+</div>
+<div class="settings-row">
+<label>底部背景图</label>
+<div class="btn-group">
+<button onclick="uploadBottomBgImage()">上传</button>
+<button onclick="resetBottomBgImage()">恢复默认</button>
+</div>
+</div>
+</div></div>
+</div>
+<div id="beautifyBubble" style="display:none;">
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">气泡美化</div>
+<div id="beautifyBubblePreviewBox" style="width:100%;height:80px;background:#f5f5f5;border-radius:8px;margin-bottom:12px;overflow:hidden;">
+<div class="msg-row other" style="display:flex;margin:8px;gap:8px;align-items:flex-start;">
+<div style="width:30px;height:30px;border-radius:6px;background:#ccc;flex-shrink:0;"></div>
+<div class="msg-bubble-wrap" style="max-width:70%;"><div class="msg-bubble tail-left">对方气泡</div></div>
+</div>
+<div class="msg-row mine" style="display:flex;margin:8px;gap:8px;align-items:flex-start;justify-content:flex-end;">
+<div class="msg-bubble-wrap" style="max-width:70%;"><div class="msg-bubble tail-right">我方气泡</div></div>
+<div style="width:30px;height:30px;border-radius:6px;background:#ccc;flex-shrink:0;"></div>
+</div>
+</div>
+<div style="font-size:12px;color:#999999;margin-bottom:8px;">选择器备注：.msg-bubble(所有气泡) .msg-row.mine .msg-bubble(我的气泡) .msg-row.other .msg-bubble(对方气泡) .msg-bubble.tail-left(对方尾巴) .msg-bubble.tail-right(我的尾巴)</div>
+<textarea id="beautifyBubbleCss" oninput="applyBeautifyLiveCss('bubble')" placeholder="/* 示例: .msg-bubble { border-radius: 20px 20px 0 20px; } */" style="width:100%;height:120px;border:1px solid #e0e0e0;border-radius:8px;padding:8px;font-size:13px;font-family:monospace;resize:none;outline:none;"></textarea>
+<div style="display:flex;gap:8px;margin-top:8px;">
+<button onclick="saveBeautifyPreset('bubble')" style="padding:6px 12px;background:#1a1a1a;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">保存预设</button>
+</div>
+<div style="margin-top:12px;">
+<div style="font-size:13px;color:#666;margin-bottom:6px;">已保存的预设：</div>
+<div id="beautifyBubblePresetList"></div>
+</div>
+</div></div>
+</div>
+<div id="beautifyMoments" style="display:none;">
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">朋友圈美化</div>
+<div style="font-size:12px;color:#999999;margin-bottom:8px;">输入CSS替换整个朋友圈样式。选择器备注：.moments-header(顶部) .moments-list(列表) .moment-item(动态项) .moment-text(文字) .moment-images(图片) .moment-footer(底部)</div>
+<textarea id="beautifyMomentsCss" oninput="applyBeautifyLiveCss('moments')" placeholder="/* 输入CSS */" style="width:100%;height:120px;border:1px solid #e0e0e0;border-radius:8px;padding:8px;font-size:13px;font-family:monospace;resize:none;outline:none;"></textarea>
+<div style="display:flex;gap:8px;margin-top:8px;">
+<button onclick="saveBeautifyPreset('moments')" style="padding:6px 12px;background:#1a1a1a;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">保存预设</button>
+</div>
+<div style="margin-top:12px;">
+<div style="font-size:13px;color:#666;margin-bottom:6px;">已保存的预设：</div>
+<div id="beautifyMomentsPresetList"></div>
+</div>
+</div></div>
+</div>
+</div>
+</div>
+<!-- 存储数据APP页面 -->
+<div class="settings-page" id="storagePage" style="z-index:350;">
+<div class="settings-header">
+<div class="settings-back" onclick="closeStorageApp()">‹</div>
+<div class="settings-title">存储数据</div>
+</div>
+<div class="settings-content">
+<div class="settings-section">
+<div class="section-title">存储空间（内置30GB）</div>
+<div id="storageOverview" style="margin-bottom:12px;"></div>
+<div style="margin:10px 0;display:flex;gap:8px;flex-wrap:wrap;">
+<button onclick="compressAllImages()" style="padding:8px 12px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;">一键压缩所有图片</button>
+<button onclick="compressStoredImages()" style="padding:8px 12px;background:#f0f0f0;border:1px solid #e0e0e0;border-radius:8px;font-size:13px;cursor:pointer;">压缩当前图片</button>
+<button onclick="resetPageLayout()" style="padding:8px 12px;background:#ff3b30;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;">重置页面布局</button>
+</div>
+</div>
+<div class="settings-section" style="margin-top:16px;">
+<div class="section-title">各应用数据占用</div>
+<div id="storageList"></div>
+</div>
+<div class="settings-section">
+<div class="settings-float-box"><div class="section-title">备份与恢复</div>
+<div class="subsection-title">导出全局文件（选择需要导出的项目）</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;">
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="chatSettings" type="checkbox"/>设置</label>
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="emojis" type="checkbox"/>表情</label>
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="wordCards" type="checkbox"/>字卡</label>
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="chatHistory" type="checkbox"/>聊天记录</label>
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="diary" type="checkbox"/>日记</label>
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="letter" type="checkbox"/>信封</label>
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="moments" type="checkbox"/>朋友圈</label>
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="specialCards" type="checkbox"/>特殊卡片</label>
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="globalSettings" type="checkbox"/>壁纸/外观</label>
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="shopData" type="checkbox"/>购物城</label>
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="balanceData" type="checkbox"/>余额</label>
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="songwriteData" type="checkbox"/>一起写歌</label>
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="contactList" type="checkbox"/>联系人</label>
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="ltData" type="checkbox"/>一起听歌</label>
+<label class="backup-item-label"><input checked="" class="backup-checkbox export-checkbox" data-key="tarotData" type="checkbox"/>塔罗</label>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+<button onclick="exportAllData(event)" style="padding:8px 12px;background:#1a1a1a;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;">导出全局文件</button>
+<button onclick="exportChatOnly()" style="padding:8px 12px;background:#f5f5f5;border:none;border-radius:6px;font-size:13px;cursor:pointer;">导出聊天记录</button>
+<button onclick="exportWordCardsOnly()" style="padding:8px 12px;background:#f5f5f5;border:none;border-radius:6px;font-size:13px;cursor:pointer;">导出字卡备份</button>
+</div>
+<div class="subsection-title" style="margin-top:16px;">导入全局文件（选择需要恢复的项目，不选则恢复全部）</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;">
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="chatSettings" type="checkbox"/>设置</label>
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="emojis" type="checkbox"/>表情</label>
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="wordCards" type="checkbox"/>字卡</label>
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="chatHistory" type="checkbox"/>聊天记录</label>
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="diary" type="checkbox"/>日记</label>
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="letter" type="checkbox"/>信封</label>
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="moments" type="checkbox"/>朋友圈</label>
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="specialCards" type="checkbox"/>特殊卡片</label>
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="globalSettings" type="checkbox"/>壁纸/外观</label>
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="shopData" type="checkbox"/>购物城</label>
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="balanceData" type="checkbox"/>余额</label>
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="songwriteData" type="checkbox"/>一起写歌</label>
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="contactList" type="checkbox"/>联系人</label>
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="ltData" type="checkbox"/>一起听歌</label>
+<label class="backup-item-label"><input class="backup-checkbox import-checkbox" data-key="tarotData" type="checkbox"/>塔罗</label>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+<button onclick="importData('full')" style="padding:8px 12px;background:#1a1a1a;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;">导入全局文件</button>
+<button onclick="importData('chat')" style="padding:8px 12px;background:#f5f5f5;border:none;border-radius:6px;font-size:13px;cursor:pointer;">导入聊天记录</button>
+<button onclick="importData('wordcards')" style="padding:8px 12px;background:#f5f5f5;border:none;border-radius:6px;font-size:13px;cursor:pointer;">导入字卡备份</button>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+<button onclick="compressStoredImages()" style="padding:8px 12px;background:#f5f5f5;border:none;border-radius:6px;font-size:13px;cursor:pointer;">压缩当前图片</button>
+<button onclick="resetPageLayout()" style="padding:8px 12px;background:#ff3b30;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;">重置页面布局</button>
+</div>
+</div>
+</div>
+
+<div style="padding:20px 16px;text-align:center;font-size:11px;color:#999;line-height:1.8;">
+<div>网站作者：@今天要吃1顿饭</div>
+<div>账号：6673995435</div>
+<div>发布平台：小红书</div>
+<div style="margin-top:6px;">本网站严禁二传二改，如果你并不是从此平台此作者账号获取到的网站还望可以告知原作者，非常感谢，愿使用愉快。</div>
+</div>
+</div>
+</div>
+<!-- 各应用数据独立模态框 -->
+<div class="modal" id="appDataModal" style="z-index:400;">
+<div class="modal-content" style="background:#fff;border:none;max-height:80vh;overflow-y:auto;">
+<div class="modal-title" id="appDataModalTitle">应用数据</div>
+<div id="appDataModalBody" style="font-size:13px;color:#333;line-height:1.6;"></div>
+<div class="modal-btns">
+<div class="modal-btn cancel" onclick="document.getElementById('appDataModal').style.display='none'">关闭</div>
+</div>
+</div>
+</div>
+<!-- Ta的传讯页面 -->
+<div class="ta-app-page" id="taAppPage">
+    <!-- 背景装饰 -->
+    <div class="ta-bg-grid"></div>
+    <div class="ta-bg-stars" id="taStarsBg"></div>
+    <!-- BlackBerry手机外壳 -->
+    <div class="ta-device">
+        <!-- 听筒/摄像头/品牌 -->
+        <div class="ta-device-top">
+            <div class="ta-device-speaker"></div>
+            <div class="ta-device-camera"></div>
+            <div class="ta-device-led"></div>
+            <div class="ta-brand">Beloved Time</div>
+        </div>
+        <!-- 屏幕 -->
+        <div class="ta-screen">
+            <!-- 屏幕装饰星星 -->
+            <svg class="ta-screen-sparkle tl" viewBox="0 0 24 24" fill="#a8d4ff"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>
+            <svg class="ta-screen-sparkle br" viewBox="0 0 24 24" fill="#a8d4ff"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z"/></svg>
+            <!-- 输入页 -->
+            <div class="ta-input-page" id="taInputPage">
+                <div class="ta-title">请输入你要链接的对象</div>
+                <div class="ta-input-wrap">
+                    <input class="ta-input" id="taNameInput" type="text" placeholder="输入对方的名字" maxlength="20" autocomplete="off"/>
+                    <button class="ta-btn" id="taStartBtn" onclick="taStartLink()">开始链接</button>
+                </div>
+            </div>
+            <!-- 加载页 -->
+            <div class="ta-loading-page" id="taLoadingPage">
+                <div class="ta-loading-title">正在链接 <span class="ta-loading-name" id="taLoadName"></span> 的信号</div>
+                <div class="ta-progress-bar-wrap"><div class="ta-progress-bar-fill" id="taProgressFill"></div></div>
+                <div class="ta-progress-text" id="taProgressText">0%</div>
+                <div class="ta-loading-tip" id="taLoadingTip"></div>
+            </div>
+            <!-- 判定页 -->
+            <div class="ta-result-page" id="taResultPage">
+                <div class="ta-result-text" id="taResultText"></div>
+            </div>
+            <!-- 聊天页 -->
+            <div class="ta-chat-page" id="taChatPage">
+                <div class="ta-chat-header">
+                    <div class="ta-chat-partner">与 <span id="taChatPartnerName"></span> 的传讯</div>
+                    <div class="ta-chat-timer" id="taTimerDisplay">--</div>
+                </div>
+                <div class="ta-chat-messages" id="taMsgContainer">
+                    <div class="ta-typing-indicator" id="taTyping"><span id="taTypingText"></span><span class="cursor-blink"></span></div>
+                    <button class="ta-scroll-bottom-btn" id="taScrollBottomBtn" onclick="taScrollToBottom(true)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a2540" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+                </div>
+                <div class="ta-chat-footer">
+                    <div class="ta-cosmic-msg" id="taCosmicMsg"></div>
+                    <button class="ta-request-btn" id="taRequestBtn" onclick="taRequestReply()">请求宇宙允许回复</button>
+                    <div class="ta-chat-input-row">
+                        <input class="ta-chat-input" id="taChatInput" type="text" placeholder="输入消息" disabled maxlength="200" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')"/>
+                        <button class="ta-chat-send-btn" id="taSendBtn" onclick="taSendMsg()" disabled>发送</button>
+                    </div>
+                </div>
+            </div>
+            <!-- 断开覆盖 -->
+            <div class="ta-disconnect-overlay" id="taDisconnect">
+                <div class="ta-disconnect-text">链接已断开</div>
+            </div>
+        </div>
+        <!-- BlackBerry物理键盘 -->
+        <div class="ta-keyboard" id="taKeyboard">
+            <div class="ta-keyboard-row">
+                <div class="ta-key" data-key="q"><div class="ta-key-inner"><span class="key-main">Q</span><span class="key-sub">1</span></div></div>
+                <div class="ta-key" data-key="w"><div class="ta-key-inner"><span class="key-main">W</span><span class="key-sub">2</span></div></div>
+                <div class="ta-key" data-key="e"><div class="ta-key-inner"><span class="key-main">E</span><span class="key-sub">3</span></div></div>
+                <div class="ta-key" data-key="r"><div class="ta-key-inner"><span class="key-main">R</span><span class="key-sub">4</span></div></div>
+                <div class="ta-key" data-key="t"><div class="ta-key-inner"><span class="key-main">T</span><span class="key-sub">5</span></div></div>
+                <div class="ta-key" data-key="y"><div class="ta-key-inner"><span class="key-main">Y</span><span class="key-sub">6</span></div></div>
+                <div class="ta-key" data-key="u"><div class="ta-key-inner"><span class="key-main">U</span><span class="key-sub">7</span></div></div>
+                <div class="ta-key" data-key="i"><div class="ta-key-inner"><span class="key-main">I</span><span class="key-sub">8</span></div></div>
+                <div class="ta-key" data-key="o"><div class="ta-key-inner"><span class="key-main">O</span><span class="key-sub">9</span></div></div>
+                <div class="ta-key" data-key="p"><div class="ta-key-inner"><span class="key-main">P</span><span class="key-sub">0</span></div></div>
+            </div>
+            <div class="ta-keyboard-row">
+                <div class="ta-key" data-key="a"><div class="ta-key-inner"><span class="key-main">A</span></div></div>
+                <div class="ta-key" data-key="s"><div class="ta-key-inner"><span class="key-main">S</span></div></div>
+                <div class="ta-key" data-key="d"><div class="ta-key-inner"><span class="key-main">D</span></div></div>
+                <div class="ta-key" data-key="f"><div class="ta-key-inner"><span class="key-main">F</span></div></div>
+                <div class="ta-key" data-key="g"><div class="ta-key-inner"><span class="key-main">G</span></div></div>
+                <div class="ta-key" data-key="h"><div class="ta-key-inner"><span class="key-main">H</span></div></div>
+                <div class="ta-key" data-key="j"><div class="ta-key-inner"><span class="key-main">J</span></div></div>
+                <div class="ta-key" data-key="k"><div class="ta-key-inner"><span class="key-main">K</span></div></div>
+                <div class="ta-key" data-key="l"><div class="ta-key-inner"><span class="key-main">L</span></div></div>
+            </div>
+            <div class="ta-keyboard-row">
+                <div class="ta-key alt" data-key="shift">SYM</div>
+                <div class="ta-key" data-key="z"><div class="ta-key-inner"><span class="key-main">Z</span></div></div>
+                <div class="ta-key" data-key="x"><div class="ta-key-inner"><span class="key-main">X</span></div></div>
+                <div class="ta-key" data-key="c"><div class="ta-key-inner"><span class="key-main">C</span></div></div>
+                <div class="ta-key" data-key="v"><div class="ta-key-inner"><span class="key-main">V</span></div></div>
+                <div class="ta-key" data-key="b"><div class="ta-key-inner"><span class="key-main">B</span></div></div>
+                <div class="ta-key" data-key="n"><div class="ta-key-inner"><span class="key-main">N</span></div></div>
+                <div class="ta-key" data-key="m"><div class="ta-key-inner"><span class="key-main">M</span></div></div>
+                <div class="ta-key alt" data-key="back" style="font-size:10px;">DEL</div>
+            </div>
+            <div class="ta-keyboard-row">
+                <div class="ta-key alt wide" data-key="home">HOME</div>
+                <div class="ta-key alt" data-key=",">,</div>
+                <div class="ta-key space" data-key=" ">SPACE</div>
+                <div class="ta-key alt" data-key=".">.</div>
+                <div class="ta-key alt wide" data-key="enter" style="font-size:10px;">ENTER</div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 词库管理页面 -->
+<div class="wordlib-page" id="wordlibAppPage">
+    <div class="wordlib-header">
+        <div class="wordlib-back" onclick="closeWordLibApp()">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div class="wordlib-title">词库</div>
+        
+    </div>
+    <div class="wordlib-body" id="wordlibBody">
+        <div class="wordlib-cats" id="wordlibCats"></div>
+        <div class="wordlib-content" id="wordlibContent"></div>
+    </div>
+</div>
+<!-- 次元购物城页面 -->
+<div class="shop-page" id="shopAppPage">
+<div class="shop-header">次元购物城</div>
+<div class="shop-tab-bar">
+<div class="shop-tab active" onclick="shopSwitchTab('shop')">商店</div>
+<div class="shop-tab" onclick="shopSwitchTab('cart')">购物车</div>
+<div class="shop-tab" onclick="shopSwitchTab('orders')">订单</div>
+<div class="shop-tab" onclick="shopSwitchTab('mine')">我的</div>
+</div>
+<div class="shop-content" id="shopContent"></div>
+</div>
+<!-- 五子棋页面 -->
+<div class="settings-page" id="gobanAppPage" style="z-index:350;">
+<div class="settings-header">
+<div class="settings-back" onclick="closeGobanApp()">‹</div>
+<div class="settings-title">五子棋</div>
+</div>
+<div class="settings-content" id="gobanAppContent" style="padding:16px;"></div>
+</div>
+<!-- 一起写歌页面 -->
+<div class="settings-page" id="songwriteAppPage" style="z-index:350;">
+<div class="settings-content" id="songwriteAppContent" style="padding:16px;position:relative;"></div>
+<div class="sw-audio-fix" id="swAudioFix">
+<div class="sw-audio-fix-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></div>
+<div class="sw-audio-fix-tx">音频被系统中断（可能是录屏）<br>点击下方按钮恢复声音</div>
+<div class="sw-audio-fix-btn" onclick="swForceResumeAudio()">点击恢复音频</div>
+</div>
+</div>
+<!-- 余额页面 -->
+<div class="settings-page" id="balanceAppPage" style="z-index:350;background:#f9f9f9;">
+<div class="settings-header">
+<div class="settings-back" onclick="closeBalanceApp()">‹</div>
+<div class="settings-title">余额</div>
+</div>
+<div style="padding:0 16px 8px;">
+<select id="balanceContactSelector" onchange="switchBalanceContact()" style="width:100%;padding:10px 14px;border:none;border-radius:8px;font-size:14px;background:#f5f5f5;color:#333;outline:none;-webkit-appearance:none;appearance:none;font-family:var(--font-family);"></select>
+</div>
+<div class="settings-content" id="balanceAppContent" style="padding:16px;background:#ffffff;"></div>
+</div>
+<!-- 默契生死局页面 -->
+<div id="lifeDeathPage" class="settings-page" style="z-index:350; display:none;">
+
+  <!-- 顶部 Header -->
+  <div class="mlsj-header">
+    <div class="mlsj-back-btn" onclick="closeLifeDeathApp()">‹</div>
+    <span class="mlsj-title">默契生死局</span>
+    <div class="mlsj-header-spacer"></div>
+  </div>
+
+  <!-- 标签栏 -->
+  <div class="mlsj-tabs">
+    <div class="mlsj-tab active" onclick="mlsjSwitchTab('game')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      游戏
+    </div>
+    <div class="mlsj-tab" onclick="mlsjSwitchTab('manage')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+      问卷管理
+    </div>
+    <div class="mlsj-tab" onclick="mlsjSwitchTab('history')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      历史记录
+    </div>
+  </div>
+
+  <!-- 内容区 -->
+  <div class="mlsj-content">
+    <div id="mlsjGameTab" class="mlsj-tab-content active"></div>
+    <div id="mlsjManageTab" class="mlsj-tab-content"></div>
+    <div id="mlsjHistoryTab" class="mlsj-tab-content"></div>
+  </div>
+</div>
+
+<!-- 相册寄语页面 -->
+<div id="albumPage" class="settings-page" style="z-index:350; display:none;">
+
+  <!-- Header -->
+  <div class="xcyj-header" id="xcyjHeader">
+    <button class="xcyj-back" id="xcyjBackBtn" onclick="closeAlbumApp()" aria-label="返回">‹</button>
+    <div class="xcyj-title" id="xcyjTitleEl">相册寄语</div>
+    <button class="xcyj-menu-btn" id="xcyjMenuBtn" onclick="openAlbumSettings()" aria-label="菜单">
+      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+    </button>
+  </div>
+
+  <!-- 分类标签栏 -->
+  <div class="xcyj-cats" id="xcyjCats"></div>
+
+  <!-- 内容区 -->
+  <div class="xcyj-content">
+    <div class="xcyj-toolbar">
+      <div class="xcyj-cur-cat" id="xcyjCurCat"></div>
+      <button class="xcyj-upload-btn" onclick="albumUploadClick()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M5 20h14"/>
+        </svg>
+        上传照片
+      </button>
+    </div>
+    <!-- 悬挂照片墙 -->
+    <div class="xcyj-wall" id="xcyjWall"></div>
+  </div>
+
+  <!-- 隐藏的文件选择 input（accept=image/*，移动端可选相册或拍照） -->
+  <input type="file" id="xcyjFileInput" accept="image/*" style="display:none" onchange="albumFileChanged(event)">
+  <!-- 相册设置模态框 -->
+  <div class="xcyj-settings-overlay" id="xcyjSettingsOverlay" style="display:none;">
+    <div class="xcyj-settings-modal">
+      <div class="xcyj-settings-header">
+        <span class="xcyj-settings-title">相册设置</span>
+        <button class="xcyj-settings-close" onclick="closeAlbumSettings()">×</button>
+      </div>
+      <div class="xcyj-settings-body">
+        <!-- 修改文字颜色 -->
+        <div class="xcyj-setting-row">
+          <div class="xcyj-setting-label">文字颜色</div>
+          <div class="xcyj-setting-controls">
+            <input type="color" id="xcyjTextColorPicker" value="#3F3F46" onchange="albumSetTextColor(this.value)">
+            <button class="xcyj-setting-reset" onclick="albumResetTextColor()">恢复默认</button>
+          </div>
+        </div>
+        <!-- 上传相册字体 -->
+        <div class="xcyj-setting-row">
+          <div class="xcyj-setting-label">相册字体</div>
+          <div class="xcyj-setting-controls">
+            <button class="xcyj-setting-btn" onclick="uploadCustomFont('album')">上传字体(.ttf)</button>
+            <button class="xcyj-setting-reset" onclick="albumResetFont()">恢复默认</button>
+          </div>
+        </div>
+        <div class="font-url-block">
+          <div class="font-url-label">URL链接</div>
+          <input type="text" id="albumFontUrlInput" class="font-url-input" placeholder="输入字体URL...">
+          <button class="font-url-apply" onclick="applyFontUrlFromInput('album')">应用</button>
+        </div>
+        <div id="customFontList_album" style="margin:6px 0;"></div>
+        <div style="font-size:11px;color:#999;margin-top:4px;">ttf文件上传可能会导致网站卡顿，谨慎使用！</div>
+        <!-- 修改相册背景 -->
+        <div class="xcyj-setting-row">
+          <div class="xcyj-setting-label">相册背景图</div>
+          <div class="xcyj-setting-controls">
+            <button class="xcyj-setting-btn" onclick="albumUploadBg()">上传背景</button>
+            <button class="xcyj-setting-reset" onclick="albumResetBg()">恢复默认</button>
+          </div>
+        </div>
+        <!-- 修改相册背景颜色 -->
+        <div class="xcyj-setting-row">
+          <div class="xcyj-setting-label">背景颜色</div>
+          <div class="xcyj-setting-controls">
+            <input type="color" id="xcyjBgColorPicker" value="#F4F4F5" onchange="albumSetBgColor(this.value)">
+            <button class="xcyj-setting-reset" onclick="albumResetBgColor()">恢复默认</button>
+          </div>
+        </div>
+        <!-- 修改拍立得颜色 -->
+        <div class="xcyj-setting-row">
+          <div class="xcyj-setting-label">拍立得边框颜色</div>
+          <div class="xcyj-setting-controls">
+            <input type="color" id="xcyjPolaroidColorPicker" value="#FFFFFF" onchange="albumSetPolaroidColor(this.value)">
+            <button class="xcyj-setting-reset" onclick="albumResetPolaroidColor()">恢复默认</button>
+          </div>
+        </div>
+        <!-- 修改返回键按钮 -->
+        <div class="xcyj-setting-row">
+          <div class="xcyj-setting-label">返回键按钮</div>
+          <div class="xcyj-setting-controls">
+            <button class="xcyj-setting-btn" onclick="albumUploadBackBtn()">上传图片</button>
+            <button class="xcyj-setting-reset" onclick="albumResetBackBtn()">恢复默认</button>
+          </div>
+        </div>
+        <!-- 修改菜单按钮 -->
+        <div class="xcyj-setting-row">
+          <div class="xcyj-setting-label">菜单按钮</div>
+          <div class="xcyj-setting-controls">
+            <button class="xcyj-setting-btn" onclick="albumUploadMenuBtn()">上传图片</button>
+            <button class="xcyj-setting-reset" onclick="albumResetMenuBtn()">恢复默认</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 相册字体/背景/按钮的隐藏文件输入 -->
+  <input type="file" id="xcyjFontInput" accept=".ttf,.otf" style="display:none" onchange="albumFontChanged(event)">
+  <input type="file" id="xcyjBgInput" accept="image/*" style="display:none" onchange="albumBgChanged(event)">
+  <input type="file" id="xcyjBackBtnInput" accept="image/*" style="display:none" onchange="albumBackBtnChanged(event)">
+  <input type="file" id="xcyjMenuBtnInput" accept="image/*" style="display:none" onchange="albumMenuBtnChanged(event)">
+
+  <!-- 放大详情弹层 -->
+  <div class="xcyj-overlay" id="xcyjDetailOverlay" style="display:none">
+    <div class="xcyj-detail-mask" onclick="closePhotoDetail()"></div>
+    <div class="xcyj-detail-card">
+      <button class="xcyj-detail-close" onclick="closePhotoDetail()">×</button>
+      <div class="xcyj-detail-scroll">
+        <img class="xcyj-detail-img" id="xcyjDetailImg" src="" alt="照片">
+        <div class="xcyj-detail-date" id="xcyjDetailDate"></div>
+
+        <div class="xcyj-detail-section">
+          <div class="xcyj-detail-label">他的留言</div>
+          <div class="xcyj-detail-text" id="xcyjDetailHis"></div>
+          <div class="xcyj-detail-actions">
+            <button class="xcyj-mini-btn" id="xcyjSummonBtn" onclick="summonHisMessage()">dd对方留言</button>
+            <button class="xcyj-mini-btn" onclick="editHisMessage()">编辑</button>
+          </div>
+          <div class="xcyj-detail-status" id="xcyjSummonStatus"></div>
+        </div>
+
+        <div class="xcyj-detail-section">
+          <div class="xcyj-detail-label">我的留言</div>
+          <div class="xcyj-detail-text" id="xcyjDetailMy"></div>
+          <div class="xcyj-detail-actions">
+            <button class="xcyj-mini-btn" onclick="editMyMessage()">编辑留言</button>
+          </div>
+        </div>
+
+        <div class="xcyj-detail-section">
+          <button class="xcyj-danger-btn" onclick="deleteCurrentPhoto()">删除照片</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 重新分类弹层（长按触发） -->
+  <div class="xcyj-overlay" id="xcyjRecatOverlay" style="display:none">
+    <div class="xcyj-detail-mask" onclick="closeRecategorize()"></div>
+    <div class="xcyj-recat-card">
+      <div class="xcyj-recat-title">移动到分类</div>
+      <div class="xcyj-recat-list" id="xcyjRecatList"></div>
+      <button class="xcyj-recat-close" onclick="closeRecategorize()">取消</button>
+    </div>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div class="xcyj-toast" id="xcyjToast" style="display:none"></div>
+</div>
+
+<!-- 通用遮罩 -->
+<div class="overlay" id="overlay" onclick="closeAllModals()"></div>
+<!-- 站内消息通知弹窗 - 微信风格 -->
+<div id="chatNotification" onclick="openChatFromNotification()" style="position:fixed;top:calc(env(safe-area-inset-top,12px) + 12px);left:12px;right:12px;z-index:9999;background:rgba(245,245,245,0.97);border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.12);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1),opacity 0.35s ease;opacity:0;pointer-events:none;overflow:hidden;max-width:calc(100% - 24px);font-family:var(--font-family);cursor:pointer;">
+<div style="display:flex;align-items:center;padding:14px 16px;gap:12px;">
+<!-- 头像 -->
+<div id="notifAvatar" style="width:42px;height:42px;border-radius:6px;flex-shrink:0;overflow:hidden;background:#4a4a4a;display:flex;align-items:center;justify-content:center;">
+<img id="notifAvatarImg" src="" style="width:100%;height:100%;object-fit:cover;display:none;"/>
+<span id="notifAvatarFallback" style="color:#fff;font-size:16px;font-weight:500;"></span>
+</div>
+<!-- 内容 -->
+<div style="flex:1;min-width:0;">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+<span id="notifSenderName" style="font-size:16px;font-weight:500;color:#1a1a1a;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+<span id="notifTime" style="font-size:12px;color:#999999;"></span>
+</div>
+<div id="notifContent" style="font-size:14px;color:#666666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.4;"></div>
+</div>
+</div>
+</div>
+<!-- 桌面编辑面板 -->
+<div class="edit-menu" id="mainEditMenu"><span class="edit-menu-close" onclick="closeAllModals()">×</span><h3>桌面编辑</h3><div class="edit-option" onclick="openSizeEditor()">调整应用图标大小</div><div class="edit-option" onclick="openNameColorEditor()">修改应用名称颜色</div><div class="edit-option" onclick="openAppNameSizeEditor()">调整应用名称大小</div><div style="border-top:1px solid #f0f0f0;margin:8px 0;"></div><div style="font-size:13px;color:#999;margin-bottom:8px;font-family:var(--font-family);">组件位置调节（滑动调整）</div><div class="edit-option" onclick="openWidgetPosEditor('anniversary','纪念日组件',1)">第一页 · 纪念日组件</div><div class="edit-option" onclick="openWidgetPosEditor('appSection','聊天/日记/朋友圈/信封',1)">第一页 · 聊天日记朋友圈信封</div><div class="edit-option" onclick="openWidgetPosEditor('appSectionBottom','美化/字卡/盲选抽牌/他的手机',1)">第一页 · 美化字卡盲选抽牌</div><div style="border-top:1px solid #f0f0f0;margin:8px 0;"></div><div class="edit-option" onclick="openWidgetPosEditor('period','日历组件',2)">第二页 · 日历组件</div><div class="edit-option" onclick="openWidgetPosEditor('wordCard','☆*:.｡. o(≧▽≦)o .｡.:*☆',2)">第二页 · ☆*:.｡. o(≧▽≦)o .｡.:*☆</div><div class="edit-option" onclick="openWidgetPosEditor('thirdRow','时间/一起写歌/五子棋等',2)">第二页 · 时间和游戏行</div><div style="border-top:1px solid #f0f0f0;margin:8px 0;"></div><div class="edit-option" onclick="openWidgetPosEditor('p3Polaroids','拍立得组件',3)">修改拍立得组件位置</div><div class="edit-option" onclick="openWidgetPosEditor('p3MidRow','头像组件',3)">修改头像组件位置</div><div class="edit-option" onclick="openWidgetPosEditor('p3AppGrid','四个App',3)">修改四个app的位置</div><div style="border-top:1px solid #f0f0f0;margin:8px 0;"></div><div class="edit-option" onclick="openDockPosEditor()">移动底栏位置</div></div>
+<div class="edit-menu" id="sizeEditor"><span class="edit-menu-close" onclick="closeAllModals()">×</span><h3>图标大小</h3><div class="size-slider"><input id="iconSizeSlider" max="80" min="40" oninput="updateIconSize(this.value)" type="range" value="62"/></div></div>
+<div class="edit-menu" id="nameColorEditor"><span class="edit-menu-close" onclick="closeAllModals()">×</span><h3>应用名称颜色</h3><div class="color-input-row"><label>选择颜色</label><input id="appNameColorPicker" oninput="setAppNameColor(this.value)" type="color" value="#1a1a1a"/></div></div>
+<div class="edit-menu" id="appNameSizeEditor"><span class="edit-menu-close" onclick="closeAllModals()">×</span><h3>应用名称大小</h3><div class="size-slider"><input id="appNameSizeSlider" max="18" min="10" oninput="updateAppNameSize(this.value)" step="0.5" type="range" value="12"/></div></div>
+<div class="edit-menu" id="studentIdSizeEditor"><span class="edit-menu-close" onclick="closeAllModals()">×</span><h3>学生证大小</h3><div class="size-slider"><input id="studentIdSizeSlider" max="240" min="120" oninput="updateStudentIdSize(this.value)" step="5" type="range" value="180"/></div><div id="studentIdSizeValue" style="text-align:center;font-size:12px;color:#999;margin-top:8px;font-family:var(--font-family);">180px</div></div>
+<div class="edit-menu" id="widgetPosEditor"><span class="edit-menu-close" onclick="closeWidgetPosEditor()">×</span><h3 id="widgetPosTitle">组件位置</h3><div id="widgetPosHint" style="font-size:12px;color:#999;margin-bottom:6px;font-family:var(--font-family);">滑动调节组件垂直位置</div><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="font-size:12px;color:#666;white-space:nowrap;font-family:var(--font-family);">上移</span><div class="size-slider" style="flex:1;margin:0;"><input id="widgetPosSlider" max="100" min="0" oninput="applyWidgetPosSlider(this.value)" step="1" type="range" value="50"/></div><span style="font-size:12px;color:#666;white-space:nowrap;font-family:var(--font-family);">下移</span></div><div id="widgetPosValue" style="text-align:center;font-size:11px;color:#bbb;font-family:var(--font-family);">偏移: 0px</div></div>
+<div class="upload-modal" id="uploadModal"><span class="edit-menu-close" onclick="closeAllModals()">×</span><h3>选择图片</h3><div class="upload-option" onclick="triggerUpload()"><svg viewbox="0 0 24 24"><rect height="18" rx="2" width="18" x="3" y="3"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>从相册选择</div><div class="upload-option" onclick="resetWidgetImage()"><svg viewbox="0 0 24 24"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>重置为初始</div></div>
+<div class="edit-menu" id="anniversaryEditor"><span class="edit-menu-close" onclick="closeAllModals()">×</span><h3>编辑纪念日</h3><div style="margin-top:12px;"><label style="font-size:13px;color:#666;font-family:var(--font-family);">第一行文字</label><input class="edit-input" id="editTitle" placeholder="输入标题" type="text"/></div><div style="margin-top:12px;"><label style="font-size:13px;color:#666;font-family:var(--font-family);">日期</label><input class="edit-input" id="editDate" type="date"/></div><div class="color-input-row"><label>字体颜色</label><input id="anniColorPicker" oninput="setAnniversaryColor(this.value)" type="color" value="#1a1a1a"/></div><div class="edit-option" onclick="openAnniversaryBgUpload()" style="margin-top:12px;">更换背景图片</div><div class="edit-option" onclick="saveAnniversary()">保存</div></div>
+<div class="edit-menu" id="periodEditMenu"><span class="edit-menu-close" onclick="closeAllModals()">×</span><h3>日历设置</h3><div class="edit-option" onclick="openPeriodBgUpload()">更换背景图片</div><div class="edit-option" onclick="resetPeriodBg()">重置背景</div><div class="color-input-row"><label>字体颜色</label><input id="periodColorPicker" oninput="setPeriodColor(this.value)" type="color" value="#1a1a1a"/></div></div>
+<div class="edit-menu" id="timeEditMenu"><span class="edit-menu-close" onclick="closeAllModals()">×</span><h3>时间组件</h3><div class="edit-option" onclick="openTimeBgUpload()">更换背景图片</div><div class="edit-option" onclick="resetTimeBg()">重置背景</div><div class="color-input-row"><label>字体颜色</label><input id="timeColorPicker" oninput="setTimeColor(this.value)" type="color" value="#1a1a1a"/></div><div style="margin-top:12px;"><label style="font-size:13px;color:#666;font-family:var(--font-family);">时差设置</label><div style="display:flex;gap:8px;margin-top:6px;"><div style="flex:1;"><label style="font-size:11px;color:#999;">小时</label><input class="edit-input" id="timeOffsetHour" step="1" type="number" value="-9" style="width:100%;"/></div><div style="flex:1;"><label style="font-size:11px;color:#999;">分钟</label><input class="edit-input" id="timeOffsetMin" step="1" type="number" value="0" min="0" max="59" style="width:100%;"/></div><div style="flex:1;"><label style="font-size:11px;color:#999;">秒</label><input class="edit-input" id="timeOffsetSec" step="1" type="number" value="0" min="0" max="59" style="width:100%;"/></div></div></div><div class="edit-option" onclick="saveTimeOffset()">保存时差</div></div>
+<div class="edit-menu" id="wordCardEditMenu"><span class="edit-menu-close" onclick="closeAllModals()">×</span><h3>字卡设置</h3><div class="edit-option" onclick="openWordCardBgUpload()">更换背景图片</div><div class="edit-option" onclick="resetWordCardBg()">重置背景</div><div class="color-input-row"><label>字体颜色</label><input id="wordCardColorPicker" oninput="setWordCardColor(this.value)" type="color" value="#1a1a1a"/></div></div>
+<!-- 批量上传模态框 -->
+<div class="modal batch-upload-modal" id="batchUploadModal">
+<div class="modal-content">
+<div class="modal-title">批量上传</div>
+<textarea class="modal-textarea" id="batchUploadTextarea" placeholder="一句一行"></textarea>
+<div class="modal-btns">
+<div class="modal-btn cancel" onclick="closeBatchUpload()">取消</div>
+<div class="modal-btn confirm" onclick="confirmBatchUpload()">确认上传</div>
+</div>
+</div>
+</div>
+<!-- 转账模态框 -->
+<div class="modal" id="transferModal">
+<div class="modal-content">
+<div class="modal-title">转账</div>
+<input class="modal-input" id="transferAmount" placeholder="输入金额" type="number"/>
+<input class="modal-input" id="transferRemark" placeholder="添加备注（可选）" type="text"/>
+<div class="modal-btns">
+<div class="modal-btn cancel" onclick="closeTransferModal()">取消</div>
+<div class="modal-btn confirm" onclick="sendTransfer()">转账</div>
+</div>
+</div>
+</div>
+<div class="modal" id="transferHandleModal">
+<div class="modal-content">
+<div class="modal-title" id="transferHandleTitle">对方转账</div>
+<div id="transferHandleAmount" style="text-align:center; font-size:24px; margin-bottom:8px;">¥0.00</div>
+<div id="transferHandleRemark" style="text-align:center; font-size:13px; color:#666; margin-bottom:16px;">备注</div>
+<div class="modal-btns">
+<div class="modal-btn cancel" onclick="refundTransfer()">退回</div>
+<div class="modal-btn confirm" onclick="claimTransfer()">领取</div>
+</div>
+</div>
+</div>
+<!-- 拍一拍字卡弹窗 -->
+<div class="modal" id="nudgeModal">
+<div class="modal-content">
+<div class="modal-title">拍一拍字卡</div>
+<textarea class="modal-textarea" id="nudgeTextInput" placeholder="一行一句，批量上传"></textarea>
+<div class="modal-btns">
+<div class="modal-btn cancel" onclick="closeNudgeModal()">取消</div>
+<div class="modal-btn confirm" onclick="saveNudgeCards()">保存</div>
+</div>
+</div>
+</div>
+<!-- 盲选抽牌创建模态框 -->
+<div class="modal" id="blindCardModal">
+<div class="modal-content">
+<div class="modal-title">盲选抽牌</div>
+<input class="modal-input" id="blindCardQuestion" placeholder="输入问题，例如：今晚吃什么？" type="text"/>
+<div id="blindCardOptionsWrap" style="max-height:36vh;overflow-y:auto;padding-right:4px;margin-bottom:10px;"></div>
+<div class="blind-card-countdown-row">
+<span>倒计时</span>
+<input type="number" id="bcCountdownInput" value="30" min="5" max="300"/>
+<span>秒</span>
+</div>
+<div class="modal-btns">
+<div class="modal-btn cancel" onclick="closeBlindCardModal()">取消</div>
+<div class="modal-btn confirm" onclick="sendBlindCard()">发送</div>
+</div>
+</div>
+</div>
+<!-- 盲选抽牌答题悬浮层 -->
+<div class="blind-card-overlay" id="blindCardOverlay">
+<div class="blind-card-countdown" id="blindCardCountdown">30</div>
+<div class="blind-card-title" id="blindCardOverlayTitle"></div>
+<div class="blind-card-tip" id="blindCardOverlayTip"></div>
+<div class="blind-card-grid" id="blindCardGrid"></div>
+<div class="blind-card-actions">
+<button class="blind-card-btn-cancel" onclick="closeBlindCardOverlay()">取消</button>
+<button class="blind-card-btn-confirm" id="blindCardConfirmBtn" onclick="confirmBlindCard()">确定</button>
+</div>
+</div>
+<div class="blind-card-result-tip" id="blindCardResultTip"></div>
+<!-- 发朋友圈模态框 -->
+<div class="modal publish-moment-modal" id="publishMomentModal">
+<div class="modal-content">
+<div class="modal-title">发朋友圈</div>
+<textarea class="publish-textarea" id="publishMomentText" placeholder="分享此刻..."></textarea>
+<div class="publish-media-grid" id="publishMediaGrid">
+<div class="publish-media-add" onclick="addPublishMedia()">
+<svg viewbox="0 0 24 24"><line x1="12" x2="12" y1="5" y2="19"></line><line x1="5" x2="19" y1="12" y2="12"></line></svg>
+</div>
+</div>
+<div class="modal-btns">
+<div class="modal-btn cancel" onclick="closePublishMoment()">取消</div>
+<div class="modal-btn confirm" onclick="publishMoment()">发表</div>
+</div>
+</div>
+</div>
+<!-- 写日记模态框 -->
+<div class="modal write-diary-modal" id="writeDiaryModal">
+<div class="modal-content">
+<div class="modal-title">写日记</div>
+<div class="diary-write-date" id="writeDiaryDate"></div>
+<div class="diary-write-tag-row" id="writeDiaryTagRow"></div>
+<div class="diary-write-icon-row">
+<span>天气：</span>
+<div class="diary-write-icon-picker" id="writeDiaryWeatherPicker"></div>
+</div>
+<div class="diary-write-icon-row">
+<span>心情：</span>
+<div class="diary-write-icon-picker" id="writeDiaryMoodPicker"></div>
+</div>
+<textarea class="diary-write-textarea" id="writeDiaryText" placeholder="记录今天的故事..."></textarea>
+<div class="modal-btns">
+<div class="modal-btn cancel" onclick="closeWriteDiary()">取消</div>
+<div class="modal-btn confirm" onclick="saveDiary()">保存</div>
+</div>
+</div>
+</div>
+<!-- 双人日记填写模态框 -->
+<div class="modal double-diary-write-modal" id="doubleDiaryWriteModal">
+<div class="modal-content">
+<div class="modal-title">填写今日日记</div>
+<div id="doubleDiaryWriteFields" style="overflow-y:auto;max-height:55vh;padding:4px;"></div>
+<div class="modal-btns">
+<div class="modal-btn cancel" onclick="closeDoubleDiaryWrite()">取消</div>
+<div class="modal-btn confirm" onclick="saveDoubleDiary()">保存</div>
+</div>
+</div>
+</div>
+<!-- 日记详情模态框 -->
+<div class="modal diary-detail-modal" id="diaryDetailModal">
+<div class="modal-content" style="display:flex;flex-direction:column;align-items:center;padding:20px 16px;">
+<div class="modal-title" id="diaryDetailTitle" style="width:100%;text-align:center;">日记详情</div>
+<div class="diary-detail-content" id="diaryDetailContent" style="flex:1;overflow-y:auto;width:100%;">
+<div class="diary-detail-text" id="diaryDetailText"></div>
+</div>
+<div class="diary-detail-footer">
+<span class="danger" onclick="deleteCurrentDiary()">删除</span>
+<span onclick="editCurrentDiary()">编辑</span>
+<span onclick="sendDiaryToChat()">发送</span>
+<span id="diaryNextSentenceBtn" onclick="showNextDiarySentence()" style="display:none;">下一句</span>
+<span onclick="closeDiaryDetail()">关闭</span>
+</div>
+</div>
+</div>
+<!-- 双人日记通知弹窗 -->
+<div class="modal" id="doubleDiaryNotifyModal" style="z-index:2100;font-family:var(--font-family);">
+<div class="modal-content" style="max-width:320px;text-align:center;padding:24px 20px;background:#f7fbff;border-radius:20px;border:2px solid #c8ddf0;font-family:var(--font-family);">
+<div style="font-size:28px;margin-bottom:8px;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4a90d9" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13l2 2 4-4"/></svg></div>
+<div style="font-size:15px;color:#4a90d9;font-weight:600;margin-bottom:6px;font-family:var(--font-family);" id="diaryNotifyTitle"></div>
+<div style="font-size:13px;color:#7a9cc6;margin-bottom:16px;font-family:var(--font-family);" id="diaryNotifyText"></div>
+<div class="modal-btns">
+<div class="modal-btn confirm" onclick="closeDiaryNotify()" style="background:#4a90d9;">确认</div>
+</div>
+</div>
+</div>
+<!-- 日记设置模态框 -->
+<div class="modal" id="diarySettingsModal">
+<div class="modal-content" style="background:#f7fbff;border-radius:20px;border:2px solid #c8ddf0;max-width:420px;width:92%;">
+<div class="modal-title" style="color:#4a90d9;">日记设置</div>
+<div class="settings-content" style="padding: 0; max-height: 70vh; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+<div class="settings-section" style="margin-bottom: 12px;">
+<div class="settings-float-box"><div class="section-title">外观设置</div>
+<div class="settings-row">
+<label>页面背景色</label>
+<input id="diaryPageBg" oninput="saveDiarySettings()" type="color" value="#e8f4fd"/>
+</div>
+<div class="settings-row">
+<label>卡片背景色</label>
+<input id="diaryCardBg" oninput="saveDiarySettings()" type="color" value="#ffffff"/>
+</div>
+<div class="settings-row">
+<label>卡片边框颜色</label>
+<input id="diaryCardBorderColor" oninput="saveDiarySettings()" type="color" value="#c8ddf0"/>
+</div>
+<div class="settings-row">
+<label>字体颜色</label>
+<input id="diaryTextColor" oninput="saveDiarySettings()" type="color" value="#1a1a1a"/>
+</div>
+<div class="settings-row">
+<label>字体大小</label>
+<input id="diaryFontSize" max="20" min="12" oninput="saveDiarySettings()" type="range" value="14"/>
+<span id="diaryFontSizeVal">14</span><span style="font-size:10px;color:#999;margin-left:4px;">12-20</span>
+</div>
+<div class="settings-row">
+<label>背景图片</label>
+<div class="btn-group">
+<button onclick="uploadDiaryBg()">上传</button>
+<button onclick="resetDiaryBg()">重置</button>
+</div>
+</div>
+<div class="settings-row">
+<label>自定义字体</label>
+<div class="btn-group">
+<button onclick="uploadCustomFont('diary')">上传TTF</button>
+<button onclick="resetDiaryFont()">重置</button>
+</div>
+</div>
+<div style="font-size:11px;color:#999;margin-top:4px;">ttf文件上传可能会导致网站卡顿，谨慎使用！</div>
+<div class="font-url-block">
+<div class="font-url-label">URL链接</div>
+<input type="text" id="diaryFontUrlInput" class="font-url-input" placeholder="输入字体URL...">
+<button class="font-url-apply" onclick="applyFontUrlFromInput('diary')">应用</button>
+</div>
+<div id="customFontList_diary" style="margin:4px 0 8px;"></div>
+<div style="border-top:1px solid #f0f0f0;margin:12px 0;"></div>
+<div class="section-subtitle">详情悬浮框</div>
+<div class="settings-row">
+<label>悬浮框宽度</label>
+<input id="diaryModalWidth" max="95" min="40" oninput="saveDiarySettings()" step="1" type="range" value="86"/>
+<span id="diaryModalWidthVal">86%</span>
+</div>
+<div class="settings-row">
+<label>悬浮框高度</label>
+<input id="diaryModalHeight" max="90" min="40" oninput="saveDiarySettings()" step="1" type="range" value="52"/>
+<span id="diaryModalHeightVal">52vh</span>
+</div>
+<div class="settings-row">
+<label>悬浮框背景颜色</label>
+<input id="diaryModalBg" oninput="saveDiarySettings()" type="color" value="#ffffff"/>
+</div>
+<div class="settings-row">
+<label>悬浮框边框颜色</label>
+<input id="diaryModalBorderColor" oninput="saveDiarySettings()" type="color" value="#e0e0e0"/>
+</div>
+<div style="border-top:1px solid #f0f0f0;margin:12px 0;"></div>
+<div class="section-subtitle">横线</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">显示横线</span>
+<span class="ios-switch"><input id="diaryRulerEnabled" onchange="saveDiarySettings()" type="checkbox" checked="checked"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row">
+<label>横线粗细</label>
+<input id="diaryRulerThickness" max="4" min="0.5" oninput="saveDiarySettings()" step="0.5" type="range" value="1"/>
+<span id="diaryRulerThicknessVal">1px</span>
+</div>
+<div class="settings-row">
+<label>横线颜色</label>
+<input id="diaryRulerColor" oninput="saveDiarySettings()" type="color" value="#e0e0e0"/>
+</div>
+<div style="border-top:1px solid #f0f0f0;margin:12px 0;"></div>
+<div class="section-subtitle">阅读</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">一句一显示</span>
+<span class="ios-switch"><input id="diarySentenceMode" onchange="saveDiarySettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row">
+<button onclick="resetDiaryAppearance()" style="width:100%;padding:8px;background:#f0f0f0;border:1px solid #e0e0e0;border-radius:8px;font-size:13px;cursor:pointer;color:#333;">恢复默认（重置所有外观修改）</button>
+</div>
+</div><div class="settings-float-box"><div class="subsection-title" style="margin-top: 12px;">当前CSS参考（可用类名）</div>
+<div class="css-preview-box" id="diaryCssPreview"></div>
+<div class="subsection-title" style="margin-top: 12px;">自定义CSS（影响整个日记）</div>
+<textarea id="diaryCustomCss" oninput="saveDiarySettings()" placeholder="在此输入自定义CSS，影响整个日记页面&#10;可用类名参考上方&#10;例如：.diary-new-card { border-radius: 24px; }" style="width:100%;min-height:120px;font-size:12px;font-family:monospace;border:1px solid #c8ddf0;border-radius:8px;padding:8px;background:#f7fbff;color:#333;resize:vertical;outline:none;"></textarea>
+<div style="font-size:10px;color:#999;margin-top:4px;line-height:1.5;">类名说明：.diary-new-card=日记卡片 .diary-tag-line=标签行 .diary-meta-row=元数据行 .diary-content-preview=日记内容预览 .diary-reply-section=回复区域 .double-diary-form=双人日记卡片 .dd-title=双人日记标题 .dd-detail-section=双人日记详情区域 .dd-detail-field=双人日记字段 .diary-page=日记页面 .diary-tabs=标签栏 .diary-tab=标签项 .diary-fab=悬浮按钮 .diary-detail-modal=详情弹窗 .diary-detail-text=详情文本</div>
+</div></div>
+<div class="settings-section" style="margin-bottom: 0;">
+<div class="settings-float-box"><div class="section-title">交互设置</div>
+<div class="settings-row">
+<label>拼接字卡数量</label>
+<input id="diarySpliceMin" max="20" min="0" onchange="saveDiarySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="1"/>
+<input id="diarySpliceMax" max="20" min="0" onchange="saveDiarySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="3"/>
+</div>
+<div class="settings-row">
+<label>催更概率(%)</label>
+<input id="diaryUrgeProb" max="100" min="0" onchange="saveDiarySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="50"/>
+</div>
+<div class="settings-row">
+<label>回复概率(%)</label>
+<input id="diaryReplyProb" max="100" min="0" onchange="saveDiarySettings()" style="width:60px;border:1px solid #e0e0e0;border-radius:4px;padding:2px 6px;font-size:13px;outline:none;" type="number" value="80"/>
+</div>
+</div></div>
+<div class="settings-section" style="margin-bottom: 0;">
+<div class="settings-float-box"><div class="section-title">心情与天气</div>
+<div class="settings-row" style="flex-direction:column;align-items:flex-start;">
+<label>心情图标</label>
+<div id="diaryMoodEmojiSettings" style="display:flex;flex-wrap:wrap;gap:4px;width:100%;margin-top:4px;"></div>
+</div>
+<div class="settings-row" style="flex-direction:column;align-items:flex-start;">
+<label>天气图标</label>
+<div id="diaryWeatherEmojiSettings" style="display:flex;flex-wrap:wrap;gap:4px;width:100%;margin-top:4px;"></div>
+</div>
+</div></div>
+<div class="settings-section" style="margin-bottom: 0;">
+<div class="settings-float-box"><div class="section-title">标签管理</div>
+<div class="settings-row" style="flex-direction:column;align-items:flex-start;">
+<label>常用标签（点击删除）</label>
+<div id="diaryTagSettings" style="display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-top:4px;"></div>
+</div>
+<div class="settings-row">
+<input id="diaryNewTagInput" placeholder="输入新标签" style="flex:1;border:1px solid #e0e0e0;border-radius:4px;padding:4px 8px;font-size:13px;outline:none;" type="text"/>
+<button onclick="addDiaryTag()" style="padding:4px 12px;border:1px solid #e0e0e0;border-radius:4px;background:var(--color-white);font-size:13px;cursor:pointer;">添加</button>
+</div>
+</div></div>
+<div class="settings-section" style="margin-bottom: 0;">
+<div class="settings-float-box"><div class="section-title">今日穿搭字卡</div>
+<div style="font-size:11px;color:#999;margin-bottom:8px;font-family:var(--font-family);line-height:1.5;">对方日记"今日穿搭"会从此处字卡随机选取（上衣+下衣+鞋子）。隐藏的字卡不参与调取，支持批量上传、编辑、删除。</div>
+<div id="outfitCardSettingsWrap"></div>
+</div></div>
+<div class="settings-section" style="margin-bottom: 0;">
+<div class="settings-float-box"><div class="section-title">睡前想告诉你字卡</div>
+<div style="font-size:11px;color:#999;margin-bottom:8px;font-family:var(--font-family);line-height:1.5;">对方日记"睡前想告诉你"会从此处字卡随机选取。隐藏的字卡不参与调取，支持批量上传、编辑、删除。</div>
+<div id="bedtimeCardSettingsWrap"></div>
+</div></div>
+</div>
+<div class="modal-btns">
+<div class="modal-btn confirm" onclick="closeDiarySettings()">完成</div>
+</div>
+</div>
+</div>
+<!-- 寄信模态框 -->
+<div class="modal send-letter-modal" id="sendLetterModal">
+<div class="modal-content">
+<div class="modal-title">写一封信</div>
+<input class="modal-input" id="letterTitle" placeholder="信件标题" type="text"/>
+<textarea class="modal-textarea" id="letterContent" placeholder="写下你想说的话..."></textarea>
+<div class="modal-btns">
+<div class="modal-btn cancel" onclick="closeSendLetter()">取消</div>
+<div class="modal-btn confirm" onclick="sendLetter()">寄出</div>
+</div>
+</div>
+</div>
+<!-- 信件详情模态框 -->
+<div class="modal letter-detail-modal" id="letterDetailModal">
+<div class="modal-content" style="display:flex;flex-direction:column;align-items:center;padding:20px 16px;">
+<div class="modal-title" id="letterDetailTitle" style="width:100%;text-align:center;">信件详情</div>
+<div class="letter-detail-content" id="letterDetailContent" style="flex:1;overflow-y:auto;width:100%;">
+<div class="letter-detail-text" id="letterDetailText"></div>
+</div>
+<div class="letter-detail-footer">
+<span class="danger" onclick="deleteCurrentLetter()">删除</span>
+<span id="toggleFavBtn" onclick="toggleFavoriteLetter()">收藏</span>
+<span id="letterNextSentenceBtn" onclick="showNextLetterSentence()" style="display:none;">下一句</span>
+<span onclick="closeLetterDetail()">关闭</span>
+</div>
+</div>
+</div>
+<!-- 信封设置模态框 -->
+<div class="modal" id="letterSettingsModal">
+<div class="modal-content" style="background:#f7fbff;border-radius:20px;border:2px solid #85DBF9;max-width:420px;width:92%;">
+<div class="modal-title" style="color:#2a7ab5;">信封设置</div>
+<div class="settings-content" style="padding: 0; max-height: 60vh; overflow-y: auto;">
+<div class="settings-section" style="margin-bottom: 0;">
+<div class="settings-float-box"><div class="section-title">外观设置</div>
+<div class="settings-row">
+<label>页面背景色</label>
+<input id="letterPageBg" oninput="saveLetterSettings()" type="color" value="#85DBF9"/>
+</div>
+<div class="settings-row">
+<label>卡片背景色</label>
+<input id="letterCardBg" oninput="saveLetterSettings()" type="color" value="#ffffff"/>
+</div>
+<div class="settings-row">
+<label>卡片边框颜色</label>
+<input id="letterCardBorderColor" oninput="saveLetterSettings()" type="color" value="#85DBF9"/>
+</div>
+<div class="settings-row">
+<label>字体颜色</label>
+<input id="letterTextColor" oninput="saveLetterSettings()" type="color" value="#1a1a1a"/>
+</div>
+<div class="settings-row">
+<label>字体大小</label>
+<input id="letterFontSize" max="20" min="12" oninput="saveLetterSettings()" type="range" value="14"/>
+<span id="letterFontSizeVal">14</span>
+</div>
+<div class="settings-row">
+<label>背景图片</label>
+<div class="btn-group">
+<button onclick="uploadLetterBg()">上传</button>
+<button onclick="resetLetterBg()">重置</button>
+</div>
+</div>
+<div class="settings-row">
+<label>自定义字体</label>
+<div class="btn-group">
+<button onclick="uploadCustomFont('letter')">上传TTF</button>
+<button onclick="resetLetterFont()">重置</button>
+</div>
+</div>
+<div style="font-size:11px;color:#999;margin-top:4px;">ttf文件上传可能会导致网站卡顿，谨慎使用！</div>
+<div class="font-url-block">
+<div class="font-url-label">URL链接</div>
+<input type="text" id="letterFontUrlInput" class="font-url-input" placeholder="输入字体URL...">
+<button class="font-url-apply" onclick="applyFontUrlFromInput('letter')">应用</button>
+</div>
+<div id="customFontList_letter" style="margin:4px 0 8px;"></div>
+<div style="border-top:1px solid #f0f0f0;margin:12px 0;"></div>
+<div class="section-subtitle">详情悬浮框</div>
+<div class="settings-row">
+<label>悬浮框宽度</label>
+<input id="letterModalWidth" max="95" min="40" oninput="saveLetterSettings()" step="1" type="range" value="86"/>
+<span id="letterModalWidthVal">86%</span>
+</div>
+<div class="settings-row">
+<label>悬浮框高度</label>
+<input id="letterModalHeight" max="90" min="40" oninput="saveLetterSettings()" step="1" type="range" value="52"/>
+<span id="letterModalHeightVal">52vh</span>
+</div>
+<div class="settings-row">
+<label>悬浮框背景颜色</label>
+<input id="letterModalBg" oninput="saveLetterSettings()" type="color" value="#ffffff"/>
+</div>
+<div class="settings-row">
+<label>悬浮框边框颜色</label>
+<input id="letterModalBorderColor" oninput="saveLetterSettings()" type="color" value="#e0e0e0"/>
+</div>
+<div style="border-top:1px solid #f0f0f0;margin:12px 0;"></div>
+<div class="section-subtitle">横线</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">显示横线</span>
+<span class="ios-switch"><input id="letterRulerEnabled" onchange="saveLetterSettings()" type="checkbox" checked="checked"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row">
+<label>横线粗细</label>
+<input id="letterRulerThickness" max="4" min="0.5" oninput="saveLetterSettings()" step="0.5" type="range" value="1"/>
+<span id="letterRulerThicknessVal">1px</span>
+</div>
+<div class="settings-row">
+<label>横线颜色</label>
+<input id="letterRulerColor" oninput="saveLetterSettings()" type="color" value="#e0e0e0"/>
+</div>
+<div style="border-top:1px solid #f0f0f0;margin:12px 0;"></div>
+<div class="section-subtitle">阅读</div>
+<div class="settings-row ios-switch-row">
+<span class="ios-switch-label">一句一显示</span>
+<span class="ios-switch"><input id="letterSentenceMode" onchange="saveLetterSettings()" type="checkbox"/><span class="ios-switch-slider"></span></span>
+</div>
+<div class="settings-row">
+<button onclick="resetLetterAppearance()" style="width:100%;padding:8px;background:#f0f0f0;border:1px solid #e0e0e0;border-radius:8px;font-size:13px;cursor:pointer;color:#333;">恢复默认（重置所有外观修改）</button>
+</div>
+</div><div class="settings-float-box"><div class="subsection-title" style="margin-top: 12px;">当前CSS参考（可用类名）</div>
+<div class="css-preview-box" id="letterCssPreview"></div>
+<div class="subsection-title" style="margin-top: 12px;">自定义CSS（影响整个信封）</div>
+<textarea id="letterCustomCss" oninput="saveLetterSettings()" placeholder="在此输入自定义CSS，影响整个信封页面&#10;可用类名参考上方&#10;例如：.letter-item { border-radius: 24px; }" style="width:100%;min-height:120px;font-size:12px;font-family:monospace;border:1px solid #85DBF9;border-radius:8px;padding:8px;background:#f7fbff;color:#333;resize:vertical;outline:none;"></textarea>
+<div style="font-size:10px;color:#999;margin-top:4px;line-height:1.5;">类名说明：.letter-item=信件卡片 .letter-title=信件标题 .letter-preview=信件预览 .letter-date=信件日期 .letter-page=信封页面 .letter-tabs=标签栏 .letter-tab=标签项 .letter-fab=悬浮按钮 .letter-detail-modal=详情弹窗 .letter-detail-text=详情文本 .letter-page-header=顶部区域 .letter-page-back=返回键 .letter-page-menu=菜单键</div>
+</div></div>
+</div>
+<div class="modal-btns">
+<div class="modal-btn confirm" onclick="closeLetterSettings()">完成</div>
+</div>
+</div>
+</div>
+<!-- 消息操作菜单 -->
+<div class="msg-ops-menu" id="msgOpsMenu">
+<div class="msg-ops-item" onclick="quoteMessage()">引用</div>
+<div class="msg-ops-item" onclick="deleteMessage()">删除</div>
+<div class="msg-ops-item danger" onclick="multiDeleteMode()">多选删除</div>
+</div>
+<div class="multi-delete-bar" id="multiDeleteBar"><span id="multiDeleteCount">已选0条</span><button class="cancel-btn" onclick="cancelMultiDelete()">取消</button><button class="del-btn" onclick="confirmMultiDelete()">删除</button></div>
+<!-- 隐藏文件输入 -->
+<input accept="image/*" class="hidden-input" id="fileInput" onchange="handleFileUploadExtended(event)" type="file"/>
+<input accept="image/*,video/*" class="hidden-input" id="multiFileInput" multiple="" onchange="handleMultiFileUpload(event)" type="file"/>
+<input accept="image/*,video/*" class="hidden-input" id="publishMediaInput" multiple="" onchange="handlePublishMediaUpload(event)" type="file"/>
+<input accept="video/*" class="hidden-input" id="videoInput" onchange="handleVideoUpload(event)" type="file"/>
+<input accept=".txt,.json,.jsonl" class="hidden-input" id="textFileInput" onchange="handleTextFileUpload(event)" type="file"/>
+<input accept=".ttf,.otf" class="hidden-input" id="fontFileInput" onchange="handleFontUpload(event)" type="file"/>
+<div style="font-size:11px;color:#999;margin-top:4px;">ttf文件上传可能会导致网站卡顿，谨慎使用！</div>
+
+
+
+<!-- ===== 一起听歌 App ===== -->
+<div id="lt-app" class="lt-overlay" style="display:none">
+  <div class="lt-phone">
+
+    <!-- ===== 歌单列表 ===== -->
+    <section class="lt-screen lt-screen-list active" id="lt-screen-list">
+      <header class="lt-topbar">
+        <button class="lt-icon-btn" id="lt-list-back" aria-label="返回"></button>
+        <div class="lt-topbar-title" id="lt-list-title"></div>
+        <button class="lt-icon-btn" id="lt-list-settings" aria-label="设置"></button>
+      </header>
+
+      <!-- 主页视图：模态框 -->
+      <div class="lt-list-home lt-scroll" id="lt-list-home">
+        <!-- 仿网易云主页详情 -->
+        <div class="lt-profile-card" id="lt-profile-card">
+          <div class="lt-profile-avatar" id="lt-rel-av1"></div>
+          <div class="lt-profile-name" id="lt-profile-name">你的昵称</div>
+          <div class="lt-profile-date" id="lt-profile-date">点击即可替换文案</div>
+          <div class="lt-profile-stats">
+            <div class="lt-stat" id="lt-stat-follow"><span class="lt-stat-num" id="lt-stat-follow-num">23</span><span class="lt-stat-label">关注</span></div>
+            <div class="lt-stat" id="lt-stat-fans"><span class="lt-stat-num" id="lt-stat-fans-num">65</span><span class="lt-stat-label">粉丝</span></div>
+            <div class="lt-stat" id="lt-stat-level"><span class="lt-stat-num" id="lt-stat-level-num">Lv.8</span><span class="lt-stat-label">等级</span></div>
+          </div>
+          <div class="lt-profile-imgs" id="lt-profile-imgs">
+            <div class="lt-profile-img" data-idx="0"><div class="lt-profile-img-ph">点击<br>替换</div><img alt="" style="display:none"/></div>
+            <div class="lt-profile-img" data-idx="1"><div class="lt-profile-img-ph">点击<br>替换</div><img alt="" style="display:none"/></div>
+            <div class="lt-profile-img" data-idx="2"><div class="lt-profile-img-ph">点击<br>替换</div><img alt="" style="display:none"/></div>
+            <div class="lt-profile-img" data-idx="3"><div class="lt-profile-img-ph">点击<br>替换</div><img alt="" style="display:none"/></div>
+          </div>
+        </div>
+        <div class="lt-entry-card" id="lt-entry-fav">
+          <div class="lt-entry-icon" id="lt-entry-fav-icon"></div>
+          <div class="lt-entry-info">
+            <div class="lt-entry-title">我喜欢的</div>
+            <div class="lt-entry-sub" id="lt-entry-fav-sub">我和对方收藏的歌曲</div>
+          </div>
+          <div class="lt-entry-arrow" id="lt-entry-fav-arrow"></div>
+        </div>
+        <div class="lt-entry-card" id="lt-entry-all">
+          <div class="lt-entry-icon" id="lt-entry-all-icon"></div>
+          <div class="lt-entry-info">
+            <div class="lt-entry-title">我的歌单</div>
+            <div class="lt-entry-sub" id="lt-entry-all-sub">全部歌曲</div>
+          </div>
+          <div class="lt-entry-arrow" id="lt-entry-all-arrow"></div>
+        </div>
+        <button class="lt-end-together" id="lt-end-together" style="display:none">结束一起听歌</button>
+      </div>
+
+      <!-- 歌曲列表视图 -->
+      <div class="lt-list-songs" id="lt-list-songs" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+        <div class="lt-tabs">
+          <div class="lt-tab active" data-tab="all">全部</div>
+          <div class="lt-tab" data-tab="fav">收藏</div>
+        </div>
+        <div class="lt-playall">
+          <button class="lt-playall-btn" id="lt-playall"><span id="lt-playall-icon"></span>播放全部</button>
+          <span class="lt-playall-count" id="lt-playall-count"></span>
+          <span style="flex:1"></span>
+          <button class="lt-icon-btn" id="lt-add-song" aria-label="添加歌曲"></button>
+        </div>
+        <div class="lt-songlist lt-scroll" id="lt-songlist"></div>
+      </div>
+    </section>
+
+    <!-- ===== 播放界面 ===== -->
+    <section class="lt-screen lt-screen-player" id="lt-screen-player">
+      <div class="lt-playerbg" id="lt-playerbg"></div>
+      <header class="lt-topbar">
+        <button class="lt-icon-btn" id="lt-player-back" aria-label="返回"></button>
+        <div class="lt-topbar-title" id="lt-player-title">未在播放</div>
+        <button class="lt-icon-btn" id="lt-player-more" aria-label="更多"></button>
+      </header>
+      <div class="lt-player-center" id="lt-center">
+        <div class="lt-together" id="lt-together">
+          <div class="lt-together-avatars">
+            <div class="lt-t-avatar a" id="lt-t-av1"></div>
+            <div class="lt-t-avatar b" id="lt-t-av2"></div>
+          </div>
+          <div class="lt-together-name" id="lt-t-name">你和对方</div>
+          <div class="lt-together-sub">正在一起听</div>
+        </div>
+        <div class="lt-cover" id="lt-cover">
+          <div class="lt-cover-img" id="lt-coverimg"></div>
+        </div>
+        <div class="lt-cover-hint" id="lt-cover-hint">点击封面可更换图片</div>
+      </div>
+      <div class="lt-player-actions">
+        <button class="lt-act" id="lt-act-like"><span id="lt-act-like-icon"></span><span class="lt-act-label">收藏</span></button>
+        <button class="lt-act" id="lt-act-dl"><span id="lt-act-dl-icon"></span><span class="lt-act-label">下载</span></button>
+        <button class="lt-act" id="lt-act-cmt"><span id="lt-act-cmt-icon"></span><span class="lt-act-label">评论</span></button>
+        <button class="lt-act" id="lt-act-share"><span id="lt-act-share-icon"></span><span class="lt-act-label">邀请</span></button>
+        <button class="lt-act" id="lt-act-more"><span id="lt-act-more-icon"></span><span class="lt-act-label">更多</span></button>
+      </div>
+      <div class="lt-progress">
+        <div class="lt-progress-row">
+          <span class="lt-time" id="lt-curtime">00:00</span>
+          <div class="lt-bar" id="lt-bar"><div class="lt-bar-fill" id="lt-bar-fill"></div><div class="lt-bar-dot" id="lt-bar-dot"></div></div>
+          <span class="lt-time right" id="lt-durtime">00:00</span>
+        </div>
+      </div>
+      <div class="lt-controls">
+        <button class="lt-ctrl-btn" id="lt-loop" aria-label="循环模式"></button>
+        <button class="lt-ctrl-btn side" id="lt-prev" aria-label="上一首"></button>
+        <button class="lt-play-btn" id="lt-play" aria-label="播放暂停"></button>
+        <button class="lt-ctrl-btn side" id="lt-next" aria-label="下一首"></button>
+        <button class="lt-ctrl-btn" id="lt-tolist" aria-label="歌单"></button>
+      </div>
+    </section>
+
+    <!-- ===== 评论区 ===== -->
+    <section class="lt-screen lt-screen-comments" id="lt-screen-comments">
+      <header class="lt-topbar">
+        <button class="lt-icon-btn" id="lt-cmt-back" aria-label="返回"></button>
+        <div class="lt-topbar-title">评论</div>
+        <div style="width:38px"></div>
+      </header>
+      <div class="lt-cmt-songbar">
+        <div class="lt-cmt-cover" id="lt-cmt-cover"></div>
+        <div class="lt-cmt-songinfo">
+          <div class="lt-cmt-songname" id="lt-cmt-songname">未在播放</div>
+          <div class="lt-cmt-songartist" id="lt-cmt-songartist"></div>
+        </div>
+      </div>
+      <div class="lt-cmt-header">
+        <span class="lt-cmt-count" id="lt-cmt-count">评论 0</span>
+        <span class="lt-cmt-time" id="lt-cmt-sort">按时间倒序</span>
+      </div>
+      <div class="lt-cmt-list lt-scroll" id="lt-cmt-list"></div>
+      <div class="lt-cmt-input">
+        <input type="text" id="lt-cmt-input" placeholder="写下你的评论...">
+        <button class="lt-send-btn" id="lt-cmt-send" aria-label="发送"></button>
+      </div>
+    </section>
+
+    <!-- 悬浮卡片 -->
+    <div class="lt-mini" id="lt-mini" style="display:none">
+      <div class="lt-mini-cover" id="lt-mini-cover"></div>
+      <div class="lt-mini-info">
+        <div class="lt-mini-name" id="lt-mini-name">未在播放</div>
+        <div class="lt-mini-artist" id="lt-mini-artist"></div>
+      </div>
+      <div class="lt-mini-ctrls">
+        <button class="lt-mini-btn" id="lt-mini-play" aria-label="播放暂停"></button>
+        <button class="lt-mini-btn" id="lt-mini-next" aria-label="下一首"></button>
+        <button class="lt-mini-btn" id="lt-mini-list" aria-label="歌单"></button>
+      </div>
+    </div>
+
+    <!-- 邀请卡片 -->
+    <div class="lt-invite-mask" id="lt-invite" style="display:none">
+      <div class="lt-invite-card" id="lt-invite-card">
+        <div class="lt-invite-top">
+          <div class="lt-invite-cover" id="lt-invite-cover"></div>
+          <div class="lt-invite-info">
+            <div class="lt-invite-name" id="lt-invite-name">未在播放</div>
+            <div class="lt-invite-artist" id="lt-invite-artist"></div>
+          </div>
+        </div>
+        <div class="lt-invite-title">邀请对方一起听这首歌</div>
+        <div class="lt-invite-countdown" id="lt-invite-cd">等待接受 30s</div>
+        <div class="lt-invite-bar"><div class="lt-invite-bar-fill" id="lt-invite-bar"></div></div>
+        <div class="lt-invite-btns">
+          <button class="lt-invite-btn reject" id="lt-invite-reject">拒绝</button>
+          <button class="lt-invite-btn accept" id="lt-invite-accept">接受</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 上传歌曲 -->
+    <div class="lt-modal-mask" id="lt-upload-modal" style="display:none">
+      <div class="lt-modal">
+        <div class="lt-modal-title">添加歌曲</div>
+        <div class="lt-modal-field">
+          <label>歌曲名</label>
+          <input class="lt-modal-input" id="lt-up-name" placeholder="如：晴天">
+        </div>
+        <div class="lt-modal-field">
+          <label>歌手（可选）</label>
+          <input class="lt-modal-input" id="lt-up-artist" placeholder="如：周杰伦">
+        </div>
+        <div class="lt-modal-field">
+          <label>MP3 链接（可选，留空则模拟播放）</label>
+          <input class="lt-modal-input" id="lt-up-url" placeholder="https://.../song.mp3">
+        </div>
+        <div class="lt-modal-actions">
+          <button class="lt-modal-btn ghost" id="lt-up-cancel">取消</button>
+          <button class="lt-modal-btn primary" id="lt-up-ok">添加</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 设置 -->
+    <div class="lt-modal-mask" id="lt-settings-modal" style="display:none">
+      <div class="lt-modal" style="max-height:85%;overflow-y:auto;">
+        <div class="lt-modal-title">设置</div>
+        <div class="lt-set-section-title">基本信息</div>
+        <div class="lt-modal-field">
+          <label>对方昵称</label>
+          <input class="lt-modal-input" id="lt-set-other" placeholder="对方">
+        </div>
+        <div class="lt-modal-field">
+          <label>我的昵称</label>
+          <input class="lt-modal-input" id="lt-set-me" placeholder="我">
+        </div>
+        <div class="lt-modal-field">
+          <label>相距公里数</label>
+          <input class="lt-modal-input" id="lt-set-dist" type="number" placeholder="如 1280">
+        </div>
+        <div class="lt-set-section-title">评论回复设置</div>
+        <div class="lt-modal-field">
+          <label>对方回复时间（分钟）</label>
+          <input class="lt-modal-input" id="lt-set-replydelay" type="number" min="1" placeholder="如 1">
+        </div>
+        <div class="lt-set-section-title">外观设置</div>
+        <div class="lt-set-color-row">
+          <label>字体颜色</label>
+          <input type="color" id="lt-set-fontcolor" value="#1a1a1a">
+        </div>
+        <div class="lt-set-color-row">
+          <label>主页字体颜色（昵称/关注/粉丝/等级）</label>
+          <input type="color" id="lt-set-homefontcolor" value="#1a1a1a">
+        </div>
+        <div class="lt-set-slider-row">
+          <label>字体大小 <span id="lt-set-fontsize-val">14</span>px</label>
+          <input type="range" id="lt-set-fontsize" min="11" max="22" value="14">
+        </div>
+        <div class="lt-set-color-row">
+          <label>背景颜色</label>
+          <input type="color" id="lt-set-bgcolor" value="#f6f7f9">
+        </div>
+        <div class="lt-modal-field">
+          <label>背景图片（除全局播放界面外）</label>
+          <button class="lt-set-img-btn" id="lt-set-bgimg-btn">上传背景图片</button>
+          <button class="lt-set-img-btn" id="lt-set-bgimg-reset" style="margin-top:4px;">恢复默认背景</button>
+        </div>
+        <div class="lt-set-section-title">头像设置</div>
+        <div class="lt-modal-field">
+          <label>我的头像 / 对方头像（点击主页头像更换）</label>
+        </div>
+        <div class="lt-modal-actions">
+          <button class="lt-modal-btn ghost" id="lt-set-cancel">取消</button>
+          <button class="lt-modal-btn primary" id="lt-set-ok">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- text input modal -->
+    <div class="lt-modal-mask" id="lt-text-modal" style="display:none">
+      <div class="lt-modal">
+        <div class="lt-modal-title" id="lt-text-title">输入</div>
+        <div class="lt-modal-field">
+          <input class="lt-modal-input" id="lt-text-input" placeholder="请输入...">
+        </div>
+        <div class="lt-modal-actions">
+          <button class="lt-modal-btn ghost" id="lt-text-cancel">取消</button>
+          <button class="lt-modal-btn primary" id="lt-text-ok">确定</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- action sheet -->
+    <div class="lt-sheet-mask" id="lt-sheet" style="display:none">
+      <div class="lt-sheet">
+        <div class="lt-sheet-title" id="lt-sheet-title"></div>
+        <div id="lt-sheet-items"></div>
+        <div class="lt-sheet-cancel" id="lt-sheet-cancel">取消</div>
+      </div>
+    </div>
+
+    <!-- toast -->
+    <div class="lt-toast-wrap" id="lt-toast"></div>
+
+    <!-- hidden file input -->
+    <input type="file" id="lt-file" accept="image/*" style="display:none">
+  </div>
+</div>
+
+
+<!-- ===== 塔罗牌 App ===== -->
+<div id="tarot-app" class="tarot-overlay" style="display:none">
+  <div class="tarot-phone">
+    <header class="tarot-header">
+      <button class="tarot-icon-btn" id="tarot-back" aria-label="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="tarot-title">塔罗牌</div>
+      <button class="tarot-icon-btn" id="tarot-history-btn" aria-label="历史"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg></button>
+    </header>
+
+    <main class="tarot-main" id="tarot-main">
+      <!-- Phase 1: 输入问题 + 选择牌阵 -->
+      <div class="tarot-section" id="tarot-input-section">
+        <div class="tarot-question-wrap">
+          <input class="tarot-question-input" id="tarot-question" type="text" placeholder="请输入你想问的问题（选填）" maxlength="100"/>
+        </div>
+        <div class="tarot-intro">选择牌阵，开启占卜之旅</div>
+        <div class="tarot-spreads" id="tarot-spreads">
+          <div class="tarot-spread-card" data-spread="1">
+            <div class="tarot-spread-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M12 8v8"/></svg></div>
+            <div class="tarot-spread-info"><div class="tarot-spread-name">单张牌</div><div class="tarot-spread-desc">今日运势</div></div>
+            <div class="tarot-spread-check"></div>
+          </div>
+          <div class="tarot-spread-card" data-spread="3">
+            <div class="tarot-spread-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><rect x="2" y="6" width="14" height="18" rx="2" opacity="0.5"/><rect x="8" y="0" width="14" height="18" rx="2" opacity="0.5"/></svg></div>
+            <div class="tarot-spread-info"><div class="tarot-spread-name">三张牌</div><div class="tarot-spread-desc">过去 · 现在 · 未来</div></div>
+            <div class="tarot-spread-check"></div>
+          </div>
+          <div class="tarot-spread-card" data-spread="5">
+            <div class="tarot-spread-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 7h8M8 12h8M8 17h8"/></svg></div>
+            <div class="tarot-spread-info"><div class="tarot-spread-name">五张牌</div><div class="tarot-spread-desc">爱情指引</div></div>
+            <div class="tarot-spread-check"></div>
+          </div>
+        </div>
+        <button class="tarot-btn tarot-btn-primary tarot-start-btn" id="tarot-start" disabled>开始</button>
+      </div>
+
+      <!-- Phase 2: 洗牌 -->
+      <div class="tarot-section" id="tarot-shuffle-section" style="display:none">
+        <div class="tarot-shuffle-hint">点击「转动洗牌」整体旋转，也可拖动牌片</div>
+        <div class="tarot-shuffle-area" id="tarot-shuffle-area"></div>
+        <div class="tarot-shuffle-actions">
+          <button class="tarot-btn tarot-btn-ghost" id="tarot-reshuffle">重新散开</button>
+          <button class="tarot-btn tarot-btn-ghost" id="tarot-rotate-shuffle">转动洗牌</button>
+          <button class="tarot-btn tarot-btn-primary" id="tarot-shuffle-done">洗好了</button>
+        </div>
+      </div>
+
+      <!-- Phase 3: 抽牌 -->
+      <div class="tarot-section" id="tarot-draw-section" style="display:none">
+        <div class="tarot-draw-info">已选 <span class="count" id="tarot-selected-count">0</span> / <span id="tarot-need-count">0</span></div>
+        <div class="tarot-fan-container" id="tarot-fan-container">
+          <div class="tarot-fan-scroll" id="tarot-fan-scroll"></div>
+        </div>
+      </div>
+
+      <!-- Phase 4: 展示牌面 -->
+      <div class="tarot-section" id="tarot-result-section" style="display:none">
+        <div class="tarot-result-title" id="tarot-result-title"></div>
+        <div class="tarot-result-question" id="tarot-result-question"></div>
+        <div class="tarot-cards-result" id="tarot-cards-result"></div>
+        <div class="tarot-result-actions">
+          <button class="tarot-btn tarot-btn-primary" id="tarot-save">保存本次占卜</button>
+          <button class="tarot-btn tarot-btn-ghost" id="tarot-again">再占一次</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- 历史 -->
+    <div class="tarot-modal-mask" id="tarot-history-modal" style="display:none">
+      <div class="tarot-modal">
+        <div class="tarot-modal-header">
+          <div class="tarot-modal-title">我的牌局</div>
+          <button class="tarot-icon-btn" id="tarot-history-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="tarot-history-list" id="tarot-history-list"></div>
+      </div>
+    </div>
+
+    <!-- toast -->
+    <div class="tarot-toast" id="tarot-toast"></div>
+  </div>
+</div>
+
+
+<!-- ===== 第三页圆形头像替换（独立模块） ===== -->
+
+
+<!-- ===== 长方形组件换图（独立模块，不碰任何现有功能） ===== -->
+
+
+<!-- ===== 今日抽抽抽 · 转盘选食物（独立模块，IIFE，不碰任何现有功能） ===== -->
+
+
+<div class="randomfood_overlay" id="randomFoodOverlay">
+  <div class="randomfood_modal" id="randomFoodModal">
+    <span class="randomfood_close" id="randomFoodClose">×</span>
+    <h3 class="randomfood_title">今日抽抽抽</h3>
+    <div class="randomfood_wheel_wrap">
+      <canvas class="randomfood_canvas" id="randomFoodCanvas" width="280" height="280"></canvas>
+      <div class="randomfood_pointer"></div>
+      <button class="randomfood_spin_btn" id="randomFoodSpinBtn">转一转</button>
+    </div>
+    <div class="randomfood_result_wrap" id="randomFoodResultWrap">
+      <div class="randomfood_result" id="randomFoodResult"></div>
+      <button class="randomfood_again_btn" id="randomFoodAgainBtn">再转一次</button>
+    </div>
+    <button class="randomfood_manage_btn" id="randomFoodManageBtn">管理选项</button>
+  </div>
+  <div class="randomfood_manage_panel" id="randomFoodManagePanel">
+    <span class="randomfood_close" id="randomFoodManageClose">×</span>
+    <h3 class="randomfood_manage_title">管理选项</h3>
+    <div class="randomfood_manage_list" id="randomFoodManageList"></div>
+    <div class="randomfood_manage_add">
+      <input type="text" class="randomfood_input" id="randomFoodNewInput" placeholder="输入新选项">
+      <button class="randomfood_add_btn" id="randomFoodAddBtn">添加</button>
+    </div>
+  </div>
+</div>
+
+
+
+<script src="js/app.js"></script>
+</body>
+</html>
