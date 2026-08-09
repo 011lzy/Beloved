@@ -4999,7 +4999,8 @@
 
     }
 
-        setTimeout(init, 0);
+        if (document.readyState === 'complete') init();
+    else window.addEventListener('load', init);
 
     // ================================================================
     // 后台保活系统：SW注册 + 离开补发 + Wake Lock + 系统通知
@@ -5409,28 +5410,29 @@
         }
     }, 30000);
 
-    // ===== 离开聊天页时释放 Wake Lock =====
-    var _originalCloseChat = closeChat;
-    if (typeof _originalCloseChat === 'function') {
-        closeChat = function() {
-            _originalCloseChat();
-            if (_wakeLock) {
-                _wakeLock.release().catch(function(){});
-                _wakeLock = null;
-            }
-        };
-    }
-
-    // ===== 打开聊天页时请求 Wake Lock =====
-    var _originalOpenChat = openChat;
-    if (typeof _originalOpenChat === 'function') {
-        openChat = function() {
-            _originalOpenChat();
-            if (appData.globalSettings && appData.globalSettings.keepAliveEnabled) {
-                requestWakeLock();
-            }
-        };
-    }
+        // ===== 离开/打开聊天页时 Wake Lock 管理 =====
+    // 延迟执行，避免 closeChat/openChat 未定义导致崩溃
+    setTimeout(function() {
+        var _originalCloseChat = typeof closeChat !== 'undefined' ? closeChat : null;
+        if (typeof _originalCloseChat === 'function') {
+            closeChat = function() {
+                _originalCloseChat();
+                if (_wakeLock) {
+                    _wakeLock.release().catch(function(){});
+                    _wakeLock = null;
+                }
+            };
+        }
+        var _originalOpenChat = typeof openChat !== 'undefined' ? openChat : null;
+        if (typeof _originalOpenChat === 'function') {
+            openChat = function() {
+                _originalOpenChat();
+                if (appData.globalSettings && appData.globalSettings.keepAliveEnabled) {
+                    requestWakeLock();
+                }
+            };
+        }
+    }, 0);
 
 
     // ===== 自定义字体管理 =====
