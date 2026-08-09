@@ -719,11 +719,15 @@
             btn.textContent = '已dd';
         }
         addSystemMsgToMain('已dd' + (appData.chatSettings.otherNickname || '对方') + '回复日记，预计' + replyTime + '分钟后回复');
-        scheduleDiaryReply(diaryId, replyTime * 60 * 1000);
+               scheduleDiaryReply(diaryId, replyTime * 60 * 1000);
     }
 
-
-            viewer.id = 'momentImageViewer';
+    // ===== 朋友圈图片点击查看 =====
+    function viewMomentImage(src) {
+        let viewer = document.getElementById('momentImageViewer');
+        if (!viewer) {
+            viewer = document.createElement('div');
+            viewer.id = 'momentImageViewer'; 'momentImageViewer';
             viewer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;';
             viewer.innerHTML = '<img style="max-width:95%;max-height:95%;object-fit:contain;border-radius:4px;">';
             viewer.onclick = function() { this.style.display = 'none'; };
