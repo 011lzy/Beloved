@@ -9,21 +9,21 @@
             document.documentElement.style.setProperty('--app-height', '100vh');
         }
     </script>
-<link rel="stylesheet" href="css/core.css">
-<link rel="stylesheet" href="css/diary.css">
-<link rel="stylesheet" href="css/chat.css">
-<link rel="stylesheet" href="css/wordcard.css">
-<link rel="stylesheet" href="css/moments.css">
-<link rel="stylesheet" href="css/letter.css">
-<link rel="stylesheet" href="css/shop.css">
-<link rel="stylesheet" href="css/goban.css">
-<link rel="stylesheet" href="css/songwrite.css">
-<link rel="stylesheet" href="css/balance.css">
-<link rel="stylesheet" href="css/wordlib.css">
-<link rel="stylesheet" href="css/ta.css">
-<link rel="stylesheet" href="css/lifedeath.css">
-<link rel="stylesheet" href="css/album.css">
-<link rel="stylesheet" href="css/tarot.css">
+<link rel="stylesheet" href="css/core.css"/>
+<link rel="stylesheet" href="css/chat.css"/>
+<link rel="stylesheet" href="css/wordcard.css"/>
+<link rel="stylesheet" href="css/diary.css"/>
+<link rel="stylesheet" href="css/letter.css"/>
+<link rel="stylesheet" href="css/moments.css"/>
+<link rel="stylesheet" href="css/shop.css"/>
+<link rel="stylesheet" href="css/goban.css"/>
+<link rel="stylesheet" href="css/songwrite.css"/>
+<link rel="stylesheet" href="css/balance.css"/>
+<link rel="stylesheet" href="css/wordlib.css"/>
+<link rel="stylesheet" href="css/ta.css"/>
+<link rel="stylesheet" href="css/lifedeath.css"/>
+<link rel="stylesheet" href="css/album.css"/>
+<link rel="stylesheet" href="css/tarot.css"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="Beloved Time" name="apple-mobile-web-app-title"/>
@@ -32,9 +32,6 @@
 <link href="./icon-192.png" rel="apple-touch-icon"/>
 <link href="./icon-192.png" rel="icon" type="image/png"/>
 <title>Beloved Time · 双屏</title>
-
-
-
 </head>
 <body>
 <!-- 锁屏界面 -->
@@ -2508,8 +2505,6 @@
 <input accept=".ttf,.otf" class="hidden-input" id="fontFileInput" onchange="handleFontUpload(event)" type="file"/>
 <div style="font-size:11px;color:#999;margin-top:4px;">ttf文件上传可能会导致网站卡顿，谨慎使用！</div>
 
-
-
 <!-- ===== 一起听歌 App ===== -->
 <div id="lt-app" class="lt-overlay" style="display:none">
   <div class="lt-phone">
@@ -2788,8 +2783,6 @@
     <input type="file" id="lt-file" accept="image/*" style="display:none">
   </div>
 </div>
-
-
 <!-- ===== 塔罗牌 App ===== -->
 <div id="tarot-app" class="tarot-overlay" style="display:none">
   <div class="tarot-phone">
@@ -2873,15 +2866,11 @@
   </div>
 </div>
 
-
 <!-- ===== 第三页圆形头像替换（独立模块） ===== -->
-
 
 <!-- ===== 长方形组件换图（独立模块，不碰任何现有功能） ===== -->
 
-
 <!-- ===== 今日抽抽抽 · 转盘选食物（独立模块，IIFE，不碰任何现有功能） ===== -->
-
 
 <div class="randomfood_overlay" id="randomFoodOverlay">
   <div class="randomfood_modal" id="randomFoodModal">
@@ -2910,7 +2899,7 @@
 </div>
 
 
-
+<script>window.__LT_EMBEDDED=true;window.__DU_EMBEDDED=true;</script>
 <script src="js/core.js"></script>
 <script src="js/chat.js"></script>
 <script src="js/wordcard.js"></script>
@@ -2924,8 +2913,7 @@
 <script src="js/ta.js"></script>
 <script src="js/album.js"></script>
 <script src="js/balance.js"></script>
-<script src="js/wordlib.js"></script>
 <script src="js/tarot.js"></script>
-<script>if(typeof window._appInit==="function") window._appInit();</script>
+<script src="js/wordlib.js"></script>
 </body>
 </html>
