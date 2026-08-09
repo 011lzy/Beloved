@@ -1,0 +1,311 @@
+        /* ========== 朋友圈样式 ========== */
+        .moments-header {
+            height: calc(200px + env(safe-area-inset-top));
+            padding-top: env(safe-area-inset-top);
+            background: var(--color-light-gray);
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .moments-header .page-back, .moments-header .page-send {
+            position: absolute;
+            top: calc(env(safe-area-inset-top) + 12px);
+            color: var(--color-white);
+            font-size: 26px;
+            cursor: pointer;
+            z-index: 2;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .moments-header .page-back { left: 16px; }
+        .moments-header .page-send { right: 16px; font-size: 15px; background: transparent !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 4px; padding: 4px 10px; transition: none; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; outline: none; }
+        .moments-header .page-send:hover, .moments-header .page-send:active, .moments-header .page-send:focus, .moments-header .page-send:visited { background: transparent !important; -webkit-tap-highlight-color: transparent; }
+        .moments-user-info {
+            position: absolute;
+            right: 20px;
+            bottom: -20px;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            z-index: 2;
+        }
+        .moments-user-info .nickname {
+            color: var(--color-white);
+            font-size: 16px;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            margin-bottom: 4px;
+        }
+        .moments-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            background: var(--color-white);
+            overflow: hidden;
+            border: 2px solid var(--color-white);
+        }
+        .moments-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .moments-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-top: 30px;
+            padding-bottom: 80px;
+            background: var(--color-white);
+        }
+        .moment-item {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            gap: 12px;
+        }
+        .moment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            background: var(--color-light-gray);
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .moment-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .moment-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .moment-nickname {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-deep-black);
+            margin-bottom: 4px;
+        }
+        .moment-text {
+            font-size: 14px;
+            color: var(--color-deep-black);
+            line-height: 1.5;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+        .moment-images {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+        .moment-images.single { grid-template-columns: 1fr; }
+        .moment-images img, .moment-images video {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .moment-images.single img, .moment-images.single video {
+            width: auto;
+            max-width: 200px;
+            aspect-ratio: auto;
+            max-height: 200px;
+        }
+        .moment-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .moment-time {
+            font-size: 12px;
+            color: var(--color-light-gray);
+        }
+        .moment-more {
+            width: 30px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--color-normal-gray);
+            font-size: 14px;
+        }
+        .moment-ops-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+        .moment-ops {
+            background: var(--color-retro-black);
+            border-radius: 4px;
+            display: none;
+            position: absolute;
+            right: calc(100% + 6px);
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            white-space: nowrap;
+        }
+        .moment-ops.show { display: flex; }
+        .moment-ops span {
+            padding: 6px 12px;
+            color: var(--color-white);
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .moment-ops span svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+        .comment-item { cursor: pointer; }
+        .like-comment-area {
+            background: #f7f7f7;
+            border-radius: 4px;
+            padding: 8px 10px;
+            margin-top: 8px;
+            display: none;
+        }
+        .like-comment-area.show { display: block; }
+        .like-list {
+            color: var(--color-deep-gray);
+            font-size: 13px;
+            margin-bottom: 4px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .comment-list { font-size: 13px; }
+        .comment-item {
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+        .comment-item .comment-nick {
+            color: var(--color-deep-gray);
+            font-weight: 500;
+        }
+        .comment-item .comment-text {
+            color: var(--color-deep-black);
+        }
+        .comment-input-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e8e8e8;
+        }
+        .comment-input-row input {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+        }
+        .comment-input-row button {
+            padding: 0 12px;
+            background: var(--color-deep-black);
+            color: var(--color-white);
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* 发朋友圈弹窗 */
+        .publish-moment-modal .modal-content { max-width: 340px; }
+        .publish-textarea {
+            width: 100%;
+            height: 100px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+            outline: none;
+            resize: none;
+            font-family: var(--font-family);
+            margin-bottom: 12px;
+        }
+        .publish-media-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .publish-media-item {
+            aspect-ratio: 1;
+            background: #f5f5f5;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        .publish-media-item img, .publish-media-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .publish-media-add {
+            aspect-ratio: 1;
+            border: 1px dashed #ccc;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-light-gray);
+            cursor: pointer;
+        }
+        .publish-media-add svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+        .publish-media-del {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 18px;
+            height: 18px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* ========== 词云统计样式 ========== */
+        .word-cloud-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .word-cloud-item {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 14px;
+            background: #f0f0f0;
+            color: #333;
+            line-height: 1.4;
+            word-break: break-all;
+            font-family: var(--font-family);
+        }
+        .word-cloud-empty {
+            font-size: 13px;
+            color: #999;
+            text-align: center;
+            padding: 16px 0;
+        }
+        .msg-count-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        .msg-count-row:last-child { border-bottom: none; }
+        .msg-count-name { color: #4a4a4a; }
+        .msg-count-val {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        html.dark-mode .word-cloud-item { background: #333 !important; color: #e0e0e0 !important; }
+        html.dark-mode .word-cloud-empty { color: #888 !important; }
+        html.dark-mode .msg-count-row { border-color: #444 !important; }
+        html.dark-mode .msg-count-name { color: #e0e0e0 !important; }
+        html.dark-mode .msg-count-val { color: #fff !important; }
+
+
