@@ -5140,15 +5140,7 @@
         const title = document.getElementById('chatTitle');
         if (title) title.style.color = '#1a1a1a';
         saveData();
-    }
-
-
-
-    // ===== 朋友圈图片点击查看 =====
-    function viewMomentImage(src) {
-        let viewer = document.getElementById('momentImageViewer');
-        if (!viewer) {
-            viewer = document.createElement('div');
+        }
 
     // ===== 应用聊天显示设置（打开聊天时调用）=====
     function applyChatDisplaySettings() {
