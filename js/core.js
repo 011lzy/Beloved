@@ -4999,7 +4999,7 @@
 
     }
 
-    init();
+        setTimeout(init, 0);
 
     // ================================================================
     // 后台保活系统：SW注册 + 离开补发 + Wake Lock + 系统通知
@@ -5738,8 +5738,7 @@ function bindSwipeRightToExit(pageEl, exitFn) {
             }
         });
     }
-    if (document.readyState === 'complete') bindAll();
-    else window.addEventListener('load', bindAll);
+        setTimeout(bindAll, 0);
 })();
 
 // ===== 第三页桌面：音乐悬浮框 / 吧唧 / App交换 =====
