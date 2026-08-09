@@ -1,5 +1,0 @@
-        /* ===== 五子棋 ===== */
-        .goban-wrap{display:flex;flex-direction:column;align-items:center;}
-        #gobanCanvas{background:#e8c887;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);}
-
-
