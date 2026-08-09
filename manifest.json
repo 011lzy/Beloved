@@ -1,7 +1,7 @@
 {
-    "name": "迁逸 · 双屏",
-    "short_name": "迁逸",
-    "description": "迁逸双屏 - 专属双人互动空间",
+    "name": "Beloved Time · 双屏",
+    "short_name": "Beloved Time",
+    "description": "Beloved Time双屏 - 专属双人互动空间",
     "start_url": "./index.html",
     "scope": "./",
     "display": "standalone",
